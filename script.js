@@ -25,10 +25,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const data = await response.json();
-        document.getElementById('result').innerHTML = `
-            <h2>Translated Text:</h2>
-            <p>${data.translated_text}</p>
-        `;
+
+        // Update result and show it
+        document.getElementById('translatedText').textContent = data.translated_text;
+        document.getElementById('result').style.display = "block";
+        document.getElementById('feedbackControls').style.display = "block";
+        
+        // Save session for feedback
+        window.currentSession = {
+            original_prompt: prompt,
+            translated_text: data.translated_text,
+            target_language: target_language
+        };
 
         window.currentSession = {
             original_prompt: prompt,
@@ -131,6 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
             </tr>`;
             tableBody.innerHTML += row;
         });
+        document.getElementById('feedbackTable').style.display = "table";
     });
-
 });
