@@ -7,9 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         const prompt = document.getElementById('prompt').value.trim();
         const target_language = document.getElementById('language').value;
-
+        const selectedOption = document.getElementById('language').selectedOptions[0];
+        
         if (!prompt) {
             alert("Please enter your marketing tagline before proceeding!");
+            return;
+        }
+        
+        if (selectedOption.disabled) {
+            alert("Selected language is coming soon. Please choose a currently available language!");
             return;
         }
 
