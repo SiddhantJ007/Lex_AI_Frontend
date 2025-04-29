@@ -66,13 +66,16 @@ async function sendFeedback(feedbackType) {
         })
     });
 
-    alert("Feedback submitted. Thank you!");
-
-    // Refresh the feedback table immediately
-    await loadFeedbacks();
+    alert("Feedback submitted successfully!");
+    // Do NOT call loadFeedbacks() here
+    // Wait for user to click View Feedback button manually
 }
 
-// This function loads feedbacks - separated from viewFeedbacks click now
+// Keep View Feedback button to manually load
+document.getElementById('viewFeedbacks').addEventListener('click', async () => {
+    await loadFeedbacks();
+});
+
 async function loadFeedbacks() {
     const response = await fetch(`${backendUrl}/feedbacks/`);
     const feedbacks = await response.json();
@@ -94,12 +97,6 @@ async function loadFeedbacks() {
 
     document.getElementById('feedbackList').style.display = 'block';
 }
-
-// Connect View Feedback button to loadFeedbacks too
-document.getElementById('viewFeedbacks').addEventListener('click', async () => {
-    await loadFeedbacks();
-});
-
 
 document.getElementById('viewFeedbacks').addEventListener('click', async () => {
     const response = await fetch(`${backendUrl}/feedbacks/`);
