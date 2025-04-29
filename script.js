@@ -120,9 +120,8 @@ document.getElementById('viewFeedbacks').addEventListener('click', async () => {
     document.getElementById('feedbackList').style.display = 'block';
 });
 
-// Handle Upload PDF or Image
-document.getElementById('fileForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+// Handle Upload and Extract Text
+document.getElementById('uploadBtn').addEventListener('click', async function() {
     const file = document.getElementById('fileInput').files[0];
     if (!file) return alert("Please select a PDF or Image file.");
 
