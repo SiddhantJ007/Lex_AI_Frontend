@@ -1,151 +1,136 @@
-const backendUrl = "https://18.220.43.79";  // HTTPS Backend IP
+const backendUrl = "https://18.220.43.79";  // Replace with your actual backend IP/Domain
 
-document.getElementById('translateForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function () {
 
-    const prompt = document.getElementById('prompt').value.trim();
-    const targetLanguage = document.getElementById('target_language').value;
+    // Handle Get Translation
+    document.getElementById('getTranslationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const prompt = document.getElementById('prompt').value.trim();
+        const target_language = document.getElementById('language').value;
 
-    const supportedLanguages = [
-        "EN", "FR", "DE", "ES", "IT", "NL", "PT", "JA", "ZH", "RU",
-        "TR", "SV", "PL", "FI", "NO", "DA", "CS", "RO", "HU", "KO"
-    ];
+        if (!prompt) {
+            alert("Please enter your marketing tagline before proceeding!");
+            return;
+        }
 
-    if (!prompt) {
-        alert("Please enter your marketing tagline before proceeding!");
-        return;
-    }
+        const response = await fetch(`${backendUrl}/full-process/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                target_language: target_language
+            })
+        });
 
-    if (!supportedLanguages.includes(targetLanguage)) {
-        alert("Support for this language is coming soon! Please select another language.");
-        return;
-    }
-
-    const response = await fetch(`${backendUrl}/full-process/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt, target_language: targetLanguage })
-    });
-
-    const data = await response.json();
-    document.getElementById('translatedText').innerText = data.translated_text;
-
-    document.getElementById('outputSection').style.display = 'block';
-
-    window.currentSession = {
-        original_prompt: prompt,
-        translated_text: data.translated_text,
-        target_language: targetLanguage
-    };
-});
-
-document.getElementById('goodFeedback').addEventListener('click', async () => {
-    await sendFeedback('good');
-});
-
-document.getElementById('badFeedback').addEventListener('click', async () => {
-    await sendFeedback('bad');
-});
-
-async function sendFeedback(feedbackType) {
-    const session = window.currentSession;
-    if (!session) return;
-
-    await fetch(`${backendUrl}/feedback/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            original_prompt: session.original_prompt,
-            translated_text: session.translated_text,
-            target_language: session.target_language,
-            feedback: feedbackType
-        })
-    });
-
-    alert("Feedback submitted successfully!");
-    // Do NOT call loadFeedbacks() here
-    // Wait for user to click View Feedback button manually
-}
-
-// Keep View Feedback button to manually load
-document.getElementById('viewFeedbacks').addEventListener('click', async () => {
-    await loadFeedbacks();
-});
-
-async function loadFeedbacks() {
-    const response = await fetch(`${backendUrl}/feedbacks/`);
-    const feedbacks = await response.json();
-
-    const tbody = document.getElementById('feedbackTable').querySelector('tbody');
-    tbody.innerHTML = "";
-
-    feedbacks.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.original_prompt}</td>
-            <td>${item.translated_text}</td>
-            <td>${item.target_language}</td>
-            <td>${item.feedback}</td>
+        const data = await response.json();
+        document.getElementById('result').innerHTML = `
+            <h2>Translated Text:</h2>
+            <p>${data.translated_text}</p>
         `;
-        tbody.appendChild(row);
+
+        window.currentSession = {
+            original_prompt: prompt,
+            translated_text: data.translated_text,
+            target_language: target_language
+        };
     });
 
-    document.getElementById('feedbackList').style.display = 'block';
-}
+    // Handle Upload and Extract Text
+    document.getElementById('uploadBtn').addEventListener('click', async function() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return alert("Please select a PDF or Image file.");
 
-document.getElementById('viewFeedbacks').addEventListener('click', async () => {
-    const response = await fetch(`${backendUrl}/feedbacks/`);
-    const feedbacks = await response.json();
+        const formData = new FormData();
+        formData.append('file', file);
 
-    const tbody = document.getElementById('feedbackTable').querySelector('tbody');
-    tbody.innerHTML = "";
+        let endpoint = '';
+        if (file.name.toLowerCase().endsWith('.pdf')) {
+            endpoint = '/upload-pdf/';
+        } else {
+            endpoint = '/upload-image/';
+        }
 
-    feedbacks.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.original_prompt}</td>
-            <td>${item.translated_text}</td>
-            <td>${item.target_language}</td>
-            <td>${item.feedback}</td>
-        `;
-        tbody.appendChild(row);
+        const response = await fetch(`${backendUrl}${endpoint}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.extracted_text) {
+            document.getElementById('prompt').value = data.extracted_text;
+            alert("Text extracted successfully. Please verify and click 'Get Translation'.");
+        } else {
+            alert("Failed to extract text. Please try again.");
+        }
     });
 
-    document.getElementById('feedbackList').style.display = 'block';
-});
+    // Handle Good Feedback
+    document.getElementById('goodBtn').addEventListener('click', async function() {
+        if (!window.currentSession) {
+            alert("No translation available to give feedback on!");
+            return;
+        }
 
-// Handle Upload and Extract Text
-document.getElementById('uploadBtn').addEventListener('click', async function() {
-    const file = document.getElementById('fileInput').files[0];
-    if (!file) return alert("Please select a PDF or Image file.");
+        await fetch(`${backendUrl}/feedback/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                original_prompt: window.currentSession.original_prompt,
+                translated_text: window.currentSession.translated_text,
+                target_language: window.currentSession.target_language,
+                feedback: 'Good'
+            })
+        });
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    let endpoint = '';
-    if (file.name.toLowerCase().endsWith('.pdf')) {
-        endpoint = '/upload-pdf/';
-    } else {
-        endpoint = '/upload-image/';
-    }
-
-    const response = await fetch(`${backendUrl}${endpoint}`, {
-        method: 'POST',
-        body: formData
+        alert("Thanks for your feedback!");
     });
 
-    const data = await response.json();
+    // Handle Bad Feedback
+    document.getElementById('badBtn').addEventListener('click', async function() {
+        if (!window.currentSession) {
+            alert("No translation available to give feedback on!");
+            return;
+        }
 
-    if (data.extracted_text) {
-        document.getElementById('prompt').value = data.extracted_text;
-        alert("Text extracted successfully. Please verify and click 'Get Translation'.");
-    } else {
-        alert("Failed to extract text. Please try again.");
-    }
+        await fetch(`${backendUrl}/feedback/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                original_prompt: window.currentSession.original_prompt,
+                translated_text: window.currentSession.translated_text,
+                target_language: window.currentSession.target_language,
+                feedback: 'Bad'
+            })
+        });
+
+        alert("Thanks for your feedback!");
+    });
+
+    // Handle View Feedbacks
+    document.getElementById('viewFeedbackBtn').addEventListener('click', async function() {
+        const response = await fetch(`${backendUrl}/feedbacks/`);
+        const data = await response.json();
+
+        const tableBody = document.getElementById('feedbackTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+
+        data.forEach(fb => {
+            const row = `<tr>
+                <td>${fb.id}</td>
+                <td>${fb.original_prompt}</td>
+                <td>${fb.translated_text}</td>
+                <td>${fb.target_language}</td>
+                <td>${fb.feedback}</td>
+            </tr>`;
+            tableBody.innerHTML += row;
+        });
+    });
+
 });
