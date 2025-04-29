@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LexAI - Global Smart Translation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        h1 {
+            text-align: center;
+            color: #004080;
+            margin-bottom: 20px;
+        }
+        form, #feedbackList {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #buttonRow {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #buttonRow button {
+            flex: 1;
+            font-size: 14px;
+            padding: 10px 5px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 14px;
+            word-break: break-word;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>LexAI: Global Content Translation</h1>
+
+    <form id="translateForm">
+        <label for="prompt">Enter Your Marketing Tagline:</label><br>
+        <textarea id="prompt" name="prompt" rows="4" cols="50" placeholder="e.g., Boost your sales quickly with our new offers!"></textarea><br><br>
+
+        <label for="target_language">Select Target Language:</label><br>
+        <select id="target_language" name="target_language">
+            <optgroup label="🌟 Supported Languages">
+                <!-- We'll update languages here (already explained in last message) -->
+                <option value="EN">English</option>
+                <option value="FR">French</option>
+                <option value="DE">German</option>
+                <option value="ES">Spanish</option>
+                <option value="IT">Italian</option>
+                <option value="NL">Dutch</option>
+                <option value="PT">Portuguese</option>
+                <option value="JA">Japanese</option>
+                <option value="ZH">Chinese</option>
+                <option value="RU">Russian</option>
+                <option value="TR">Turkish</option>
+                <option value="SV">Swedish</option>
+                <option value="PL">Polish</option>
+                <option value="FI">Finnish</option>
+                <option value="NO">Norwegian</option>
+                <option value="DA">Danish</option>
+                <option value="CS">Czech</option>
+                <option value="RO">Romanian</option>
+                <option value="HU">Hungarian</option>
+                <option value="KO">Korean</option>
+            </optgroup>
+
+            <optgroup label="Coming Soon">
+                <option value="HI">Hindi</option>
+                <option value="AR">Arabic</option>
+                <option value="BN">Bengali</option>
+                <option value="TA">Tamil</option>
+                <option value="TE">Telugu</option>
+                <option value="UR">Urdu</option>
+                <option value="MR">Marathi</option>
+            </optgroup>
+        </select><br><br>
+
+        <button type="submit">Get Translation</button>
+    </form>
+
+    <div id="outputSection" style="display:none;">
+        <h2>Translated Text:</h2>
+        <p id="translatedText"></p>
+
+        <div id="buttonRow">
+            <button id="goodFeedback">Good</button>
+            <button id="badFeedback">Bad</button>
+            <button id="viewFeedbacks">View Feedbacks</button>
+        </div>
+    </div>
+
+    <div id="feedbackList" style="display:none;">
+        <h2>Saved Feedbacks:</h2>
+        <table id="feedbackTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Prompt</th>
+                    <th>Translated</th>
+                    <th>Target Language</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+<script src="script.js"></script>
+</body>
+</html>
