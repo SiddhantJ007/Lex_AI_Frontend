@@ -41,13 +41,13 @@ document.addEventListener('DOMContentLoaded', function () {
         window.currentSession = {
             original_prompt: prompt,
             translated_text: data.translated_text,
-            target_language: target_language
+            target_language: selectedOption.text
         };
 
         window.currentSession = {
             original_prompt: prompt,
             translated_text: data.translated_text,
-            target_language: target_language
+            target_language: selectedOption.text
         };
     });
 
