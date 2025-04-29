@@ -119,3 +119,58 @@ document.getElementById('viewFeedbacks').addEventListener('click', async () => {
 
     document.getElementById('feedbackList').style.display = 'block';
 });
+// Handle PDF upload
+document.getElementById('pdfForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const file = document.getElementById('pdfFile').files[0];
+    if (!file) return alert("Please select a PDF file.");
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${backendUrl}/upload-pdf/`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await response.json();
+    document.getElementById('result').innerHTML = `
+        <h2>Translated Text:</h2>
+        <p>${data.translated_text}</p>
+    `;
+
+    // Save current session for feedback
+    window.currentSession = {
+        original_prompt: file.name,  // Show file name instead of text
+        translated_text: data.translated_text,
+        target_language: 'EN'
+    };
+});
+
+// Handle Image upload
+document.getElementById('imageForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const file = document.getElementById('imageFile').files[0];
+    if (!file) return alert("Please select an image file.");
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${backendUrl}/upload-image/`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await response.json();
+    document.getElementById('result').innerHTML = `
+        <h2>Translated Text:</h2>
+        <p>${data.translated_text}</p>
+    `;
+
+    // Save current session for feedback
+    window.currentSession = {
+        original_prompt: file.name,
+        translated_text: data.translated_text,
+        target_language: 'EN'
+    };
+});
