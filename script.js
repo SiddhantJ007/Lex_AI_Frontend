@@ -1,4 +1,4 @@
-const backendUrl = "https://18.220.43.79";  // Replace with your actual backend IP/Domain
+const backendUrl = "https://lex-ai.duckdns.org";
 
 document.addEventListener('DOMContentLoaded', function () {
 
