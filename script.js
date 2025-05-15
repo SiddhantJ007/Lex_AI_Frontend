@@ -1,4 +1,4 @@
-const backendUrl = "https://lex-ai.duckdns.org";
+/*const backendUrl = "https://lex-ai.duckdns.org";
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -147,4 +147,74 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         document.getElementById('feedbackTable').style.display = "table";
     });
+});
+*/
+
+const backendUrl = "https://lex-ai.duckdns.org";
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* ---------- helper to load / reload feedbacks ---------- */
+  async function loadFeedbacks() {
+    const res  = await fetch(`${backendUrl}/feedbacks/`);
+    const data = await res.json();
+
+    const tbody = document
+      .getElementById('feedbackTable')
+      .querySelector('tbody');
+    tbody.innerHTML = '';
+
+    data.forEach(fb => {
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${fb.id}</td>
+          <td>${fb.original_prompt}</td>
+          <td>${fb.translated_text}</td>
+          <td>${fb.target_language}</td>
+          <td>${fb.feedback}</td>
+        </tr>`);
+    });
+
+    // show controls the first time
+    document.getElementById('feedbackTable').style.display = 'table';
+    document.getElementById('feedbackToolbar').classList.remove('hidden');
+
+    // (re)‑initialize DataTable
+    if ($.fn.DataTable.isDataTable('#feedbackTable')) {
+      $('#feedbackTable').DataTable().destroy();
+    }
+    const dt = $('#feedbackTable').DataTable({
+      pageLength: 5,
+      order: [[0, 'desc']],
+      dom: 't<"dt-footer"lip>'
+    });
+
+    // hook up filtering
+    $('#filterSelect').off().on('change', function () {
+      const val = this.value;
+      dt.column(4).search(val, true, false).draw();
+    });
+  }
+
+  /* ---------- copy button ---------- */
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const text = document.getElementById('translatedText').textContent;
+    navigator.clipboard.writeText(text);
+    alert('Translated text copied!');
+  });
+
+  /* ---------- Excel download ---------- */
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    window.location.href = `${backendUrl}/feedbacks/download`;
+  });
+
+  /* ---------- existing handlers stay unchanged ---------- */
+  // … (keep your Get Translation, Upload, Good, Bad code as-is)
+
+  /* remove the old View Feedback button’s click (not needed) */
+  document.getElementById('viewFeedbackBtn')
+          .classList.add('hidden');
+
+  /* ---------- initial load ---------- */
+  loadFeedbacks();   // show feedbacks at startup
 });
