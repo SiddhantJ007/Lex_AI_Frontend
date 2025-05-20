@@ -152,69 +152,158 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const backendUrl = "https://lex-ai.duckdns.org";
 
-document.addEventListener('DOMContentLoaded', () => {
+async function pingBackend() {
+  try {
+    const r = await fetch(`${backendUrl}/ping`);     
+    return r.ok;
+  } catch { return false; }
+}
 
-  /* ---------- helper to load / reload feedbacks ---------- */
-  async function loadFeedbacks() {
-    const res  = await fetch(`${backendUrl}/feedbacks/`);
-    const data = await res.json();
+/* -------------------------------------------------- */
+/* run after full DOM ready *and* jQuery present      */
+document.addEventListener("DOMContentLoaded", async () => {
 
-    const tbody = document
-      .getElementById('feedbackTable')
-      .querySelector('tbody');
-    tbody.innerHTML = '';
-
-    data.forEach(fb => {
-      tbody.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td>${fb.id}</td>
-          <td>${fb.original_prompt}</td>
-          <td>${fb.translated_text}</td>
-          <td>${fb.target_language}</td>
-          <td>${fb.feedback}</td>
-        </tr>`);
-    });
-
-    // show controls the first time
-    document.getElementById('feedbackTable').style.display = 'table';
-    document.getElementById('feedbackToolbar').classList.remove('hidden');
-
-    // (re)‑initialize DataTable
-    if ($.fn.DataTable.isDataTable('#feedbackTable')) {
-      $('#feedbackTable').DataTable().destroy();
-    }
-    const dt = $('#feedbackTable').DataTable({
-      pageLength: 5,
-      order: [[0, 'desc']],
-      dom: 't<"dt-footer"lip>'
-    });
-
-    // hook up filtering
-    $('#filterSelect').off().on('change', function () {
-      const val = this.value;
-      dt.column(4).search(val, true, false).draw();
-    });
+  if (typeof $ === "undefined") {
+    console.error("jQuery missing – LexAI UI can’t initialise.");
+    return;
   }
 
-  /* ---------- copy button ---------- */
-  document.getElementById('copyBtn').addEventListener('click', () => {
-    const text = document.getElementById('translatedText').textContent;
-    navigator.clipboard.writeText(text);
-    alert('Translated text copied!');
-  });
+  /* ---------- show UI regardless of backend state ---------- */
+  const offlineBanner = document.getElementById("offlineBanner");
+  const backendUp     = await pingBackend();
+  offlineBanner.style.display = backendUp ? "none" : "block";
 
-  /* ---------- Excel download ---------- */
-  document.getElementById('downloadBtn').addEventListener('click', () => {
+  /* === FEEDBACK TABLE ===================================== */
+  async function loadFeedbacks() {
+    try {
+      const r  = await fetch(`${backendUrl}/feedbacks/`);
+      if (!r.ok) throw new Error("backend down");
+      const data = await r.json();
+
+      const tbody = document
+        .getElementById("feedbackTable")
+        .querySelector("tbody");
+      tbody.innerHTML = "";
+      data.forEach(fb => {
+        tbody.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${fb.id}</td>
+            <td>${fb.original_prompt}</td>
+            <td>${fb.translated_text}</td>
+            <td>${fb.target_language}</td>
+            <td>${fb.feedback}</td>
+          </tr>`);
+      });
+
+      /* DataTables enhance if library is present */
+      if ($.fn.DataTable) {
+        if ($.fn.DataTable.isDataTable("#feedbackTable")) {
+          $("#feedbackTable").DataTable().destroy();
+        }
+        const dt = $("#feedbackTable").DataTable({
+          pageLength: 5,
+          order: [[0, "desc"]],
+          dom: "t<'dt-footer'lip>"
+        });
+        $("#filterSelect").off().on("change", function () {
+          dt.column(4).search(this.value).draw();
+        });
+      }
+
+      document.getElementById("feedbackTable").style.display = "table";
+      document.getElementById("feedbackToolbar").classList.remove("hidden");
+    } catch {
+      /* leave table hidden, backend is down */
+    }
+  }
+  loadFeedbacks();
+
+  /* =========== GET TRANSLATION ============================= */
+  document.getElementById("getTranslationForm")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const prompt = document.getElementById("prompt").value.trim();
+      const langEl = document.getElementById("language");
+      const target = langEl.value;
+      const selOpt = langEl.selectedOptions[0];
+
+      if (!prompt) { alert("Enter tagline first!"); return; }
+      if (selOpt.disabled) { alert("Language coming soon!"); return; }
+
+      try {
+        const res = await fetch(`${backendUrl}/full-process/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, target_language: target })
+        });
+        const data = await res.json();
+
+        document.getElementById("translatedText").textContent = data.translated_text;
+        document.getElementById("result").style.display = "block";
+        document.getElementById("feedbackControls").style.display = "block";
+
+        window.currentSession = {
+          original_prompt : prompt,
+          translated_text : data.translated_text,
+          target_language : selOpt.text
+        };
+
+      } catch { alert("Backend unreachable."); }
+    });
+
+  /* =========== GOOD / BAD buttons (separate!) ============== */
+  async function sendFeedback(type) {
+    if (!window.currentSession) {
+      alert("Translate something first!");
+      return;
+    }
+    try {
+      await fetch(`${backendUrl}/feedback/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...window.currentSession, feedback: type })
+      });
+      loadFeedbacks();                        // auto‑refresh table
+      alert("Thanks for your feedback!");
+    } catch { alert("Backend unreachable."); }
+  }
+
+  document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
+  document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
+
+  /* =========== COPY button ================================= */
+  document.getElementById("copyBtn").onclick = () => {
+    navigator.clipboard.writeText(
+      document.getElementById("translatedText").textContent
+    );
+  };
+
+  /* =========== DOWNLOAD Excel ============================== */
+  document.getElementById("downloadBtn").onclick = () => {
     window.location.href = `${backendUrl}/feedbacks/download`;
-  });
+  };
 
-  /* ---------- existing handlers stay unchanged ---------- */
-  // … (keep your Get Translation, Upload, Good, Bad code as-is)
+  /* =========== UPLOAD PDF / IMAGE ========================== */
+  document.getElementById("uploadBtn").onclick = async () => {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) { alert("Select a file first!"); return; }
 
-  /* remove the old View Feedback button’s click (not needed) */
-  document.getElementById('viewFeedbackBtn')
-          .classList.add('hidden');
+    const form = new FormData();
+    form.append("file", file);
 
-  /* ---------- initial load ---------- */
-  loadFeedbacks();   // show feedbacks at startup
+    const endpoint = file.name.toLowerCase().endsWith(".pdf")
+      ? "/upload-pdf/" : "/upload-image/";
+
+    try {
+      const r = await fetch(`${backendUrl}${endpoint}`, { method:"POST", body: form });
+      const d = await r.json();
+      if (d.extracted_text) {
+        document.getElementById("prompt").value = d.extracted_text;
+        alert("Text extracted — verify then click Get Translation.");
+      } else {
+        alert("No text found.");
+      }
+    } catch { alert("Backend unreachable."); }
+  };
 });
