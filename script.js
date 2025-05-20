@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         /* auto‑reload after Good/Bad succeeds */
         async function sendFeedback(type) {
-          … // unchanged POST body
+          // unchanged POST body
           if (res.ok) loadFeedbacks();
         }
 
