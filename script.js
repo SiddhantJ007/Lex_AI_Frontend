@@ -174,49 +174,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   offlineBanner.style.display = backendUp ? "none" : "block";
 
   /* === FEEDBACK TABLE ===================================== */
-  async function loadFeedbacks() {
-    try {
-      const r  = await fetch(`${backendUrl}/feedbacks/`);
-      if (!r.ok) throw new Error("backend down");
-      const data = await r.json();
+    async function loadFeedbacks() {
+  try {
+    const r = await fetch(`${backendUrl}/feedbacks/`);
+    if (!r.ok) throw new Error("backend");
+    const data = await r.json();
 
-      const tbody = document
-        .getElementById("feedbackTable")
-        .querySelector("tbody");
-      tbody.innerHTML = "";
-      data.forEach(fb => {
-        tbody.insertAdjacentHTML("beforeend", `
-          <tr>
-            <td>${fb.id}</td>
-            <td>${fb.original_prompt}</td>
-            <td>${fb.translated_text}</td>
-            <td>${fb.target_language}</td>
-            <td>${fb.feedback}</td>
-          </tr>`);
-      });
+    const tbody = document
+       .getElementById('feedbackTable')
+       .querySelector('tbody');
+    tbody.innerHTML = '';
 
-      /* DataTables enhance if library is present */
-      if ($.fn.DataTable) {
-        if ($.fn.DataTable.isDataTable("#feedbackTable")) {
-          $("#feedbackTable").DataTable().destroy();
-        }
-        const dt = $("#feedbackTable").DataTable({
-          pageLength: 5,
-          order: [[0, "desc"]],
-          dom: "t<'dt-footer'lip>"
-        });
-        $("#filterSelect").off().on("change", function () {
-          dt.column(4).search(this.value).draw();
-        });
+    data.forEach(fb => {
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${fb.id}</td>
+          <td>${fb.original_prompt}</td>
+          <td>${fb.translated_text}</td>
+          <td>${fb.target_language}</td>
+          <td>${fb.feedback}</td>
+        </tr>`);
+    });
+
+    document.getElementById('feedbackTable').style.display = 'table';
+
+    if ($.fn.DataTable) {                // (re‑)initialise
+      if ($.fn.DataTable.isDataTable('#feedbackTable')) {
+        $('#feedbackTable').DataTable().destroy();
       }
-
-      document.getElementById("feedbackTable").style.display = "table";
-      document.getElementById("feedbackToolbar").classList.remove("hidden");
-    } catch {
-      /* leave table hidden, backend is down */
-    }
-  }
-  loadFeedbacks();
+      $('#feedbackTable').DataTable({ pageLength:5, order:[[0,'desc']] });
+            }
+          } catch { console.warn('Backend offline – table not refreshed'); }
+        }
+        
+        /* manual refresh */
+        document.getElementById('refreshBtn').onclick = loadFeedbacks;
+        
+        /* auto‑reload after Good/Bad succeeds */
+        async function sendFeedback(type) {
+          … // unchanged POST body
+          if (res.ok) loadFeedbacks();
+        }
 
   /* =========== GET TRANSLATION ============================= */
   document.getElementById("getTranslationForm")
