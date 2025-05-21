@@ -152,41 +152,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const backendUrl = "https://lex-ai.duckdns.org";
 
+/* ---------- tiny helper ---------- */
 async function pingBackend() {
   try {
-    const r = await fetch(`${backendUrl}/ping`);     
+    const r = await fetch(`${backendUrl}/ping`, {cache:"no-store"});
     return r.ok;
   } catch { return false; }
 }
 
 /* -------------------------------------------------- */
-/* run after full DOM ready *and* jQuery present      */
 document.addEventListener("DOMContentLoaded", async () => {
 
   if (typeof $ === "undefined") {
     console.error("jQuery missing – LexAI UI can’t initialise.");
     return;
   }
-  loadFeedbacks(); 
-  /* ---------- show UI regardless of backend state ---------- */
+
+  /* show/hide connectivity banner */
   const offlineBanner = document.getElementById("offlineBanner");
   const backendUp     = await pingBackend();
   offlineBanner.style.display = backendUp ? "none" : "block";
 
+  /* only try to load feedbacks if ping succeeded */
+  if (backendUp) {
+    await loadFeedbacks();             // fills the table
+  } else {
+    console.warn("Backend offline – table will remain empty");
+  }
+});
+
   /* === FEEDBACK TABLE ===================================== */
-    async function loadFeedbacks() {
+    async function loadFeedbacks () {
   try {
     const r = await fetch(`${backendUrl}/feedbacks/`);
-    if (!r.ok) throw new Error("backend");
+    if (!r.ok) throw new Error("backend " + r.status);
     const data = await r.json();
 
     const tbody = document
-       .getElementById('feedbackTable')
-       .querySelector('tbody');
-    tbody.innerHTML = '';
+        .getElementById("feedbackTable")
+        .querySelector("tbody");
+    tbody.innerHTML = "";               // clear
 
     data.forEach(fb => {
-      tbody.insertAdjacentHTML('beforeend', `
+      tbody.insertAdjacentHTML("beforeend", `
         <tr>
           <td>${fb.id}</td>
           <td>${fb.original_prompt}</td>
@@ -195,6 +203,24 @@ document.addEventListener("DOMContentLoaded", async () => {
           <td>${fb.feedback}</td>
         </tr>`);
     });
+
+    document.getElementById('noRowsMsg').style.display =
+    data.length ? 'none' : 'block';
+      
+    // optional: re‑init DataTable
+    if ($.fn.DataTable) {
+      if ($.fn.DataTable.isDataTable("#feedbackTable")) {
+        $('#feedbackTable').DataTable().destroy();
+      }
+      $('#feedbackTable').DataTable({ pageLength: 5, order: [[0,"desc"]] });
+    }
+
+    console.log("Feedbacks loaded:", data.length);
+  } catch (e) {
+    console.error("loadFeedbacks failed:", e);
+    alert("Could not load feedbacks – see console.");
+  }
+}
 
     document.getElementById('feedbackTable').style.display = 'table';
 
@@ -329,3 +355,5 @@ document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
     } catch { alert("Backend unreachable."); }
   };
 });
+
+document.getElementById("refreshBtn").onclick = loadFeedbacks;
