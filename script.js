@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
       } catch { alert("Backend unreachable."); }
-    });
+    };
 
   /* =========== GOOD / BAD buttons (separate!) ============== */
   async function sendFeedback(type) {
