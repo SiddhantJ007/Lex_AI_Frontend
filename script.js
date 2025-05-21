@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("jQuery missing – LexAI UI can’t initialise.");
     return;
   }
-
+  loadFeedbacks(); 
   /* ---------- show UI regardless of backend state ---------- */
   const offlineBanner = document.getElementById("offlineBanner");
   const backendUp     = await pingBackend();
@@ -217,9 +217,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
   /* =========== GET TRANSLATION ============================= */
-  document.getElementById("getTranslationForm")
-    .addEventListener("submit", async (e) => {
-      e.preventDefault();
+  document.getElementById("translateBtn").onclick = async (e) => {
+  e.preventDefault();
 
       const prompt = document.getElementById("prompt").value.trim();
       const langEl = document.getElementById("language");
