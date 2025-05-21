@@ -252,24 +252,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* =========== GOOD / BAD buttons (separate!) ============== */
   async function sendFeedback(type) {
-    if (!window.currentSession) {
-      alert("Translate something first!");
-      return;
-    }
-    try {
-      await fetch(`${backendUrl}/feedback/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...window.currentSession, feedback: type })
-      });
-      loadFeedbacks();                        // auto‑refresh table
-      alert("Thanks for your feedback!");
-    } catch { alert("Backend unreachable."); }
+  if (!window.currentSession) {
+    alert("Translate something first!");
+    return;
   }
 
-  document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
-  document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
+  // assign a temporary user id (later we’ll replace with real auth)
+  const userId = localStorage.getItem("lexai_uid") ||
+                 crypto.randomUUID();
+  localStorage.setItem("lexai_uid", userId);
 
+  const payload = {
+    user_id:          userId,
+    original_prompt:  window.currentSession.original_prompt,
+    translated_text:  window.currentSession.translated_text,
+    target_language:  window.currentSession.target_language,
+    feedback:         type          // "Good" or "Bad"
+  };
+
+  const res = await fetch(`${backendUrl}/feedback/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.ok) {
+    await loadFeedbacks();          // refresh table immediately
+    alert("Thanks for your feedback!");
+  } else {
+    const err = await res.json();
+    console.error(err);
+    alert("Feedback failed! See console.");
+  }
+}
   /* =========== COPY button ================================= */
   document.getElementById("copyBtn").onclick = () => {
     navigator.clipboard.writeText(
