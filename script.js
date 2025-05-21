@@ -284,13 +284,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("Feedback failed! See console.");
   }
 }
+document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
+document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
+    
   /* =========== COPY button ================================= */
   document.getElementById("copyBtn").onclick = () => {
     navigator.clipboard.writeText(
       document.getElementById("translatedText").textContent
     );
   };
-
+ 
+  document.getElementById("copyBtn").onclick = () => {
+  const txt = document.getElementById("translatedText").textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    alert("Translated text copied to clipboard!");
+  });
+};
+    
   /* =========== DOWNLOAD Excel ============================== */
   document.getElementById("downloadBtn").onclick = () => {
     window.location.href = `${backendUrl}/feedbacks/download`;
