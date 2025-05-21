@@ -98,6 +98,10 @@
         #feedbackControls button:nth-child(3) { background-color: #1e90ff; } /* Refresh */
         
     </style>
+    <style>
+      #feedbackTable      { width:100%; margin-top:20px; border-collapse:collapse; }
+      #feedbackToolbar    { margin-top:10px; }
+    </style>
 </head>
 <body>
     <div class="section">
@@ -173,10 +177,9 @@
     <div id="feedbackControls">
         <button type="button" id="goodBtn">Good</button>
         <button type="button" id="badBtn">Bad</button>
-         <button type="button" id="refreshBtn">Refresh Feedbacks</button>
     </div>
 
-    <div id="feedbackToolbar" class="hidden" style="margin-top:15px;">
+    <div id="feedbackToolbar" style="margin-top:15px;">
       <label>Show: 
     <select id="filterSelect">
       <option value="">All</option>
@@ -184,6 +187,7 @@
       <option value="Bad">Bad</option>
     </select>
       </label>
+      <button id="refreshBtn">Refresh Feedbacks</button>
       <button id="downloadBtn">Download Excel</button>
     </div>
 
