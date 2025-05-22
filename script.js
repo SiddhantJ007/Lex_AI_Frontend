@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if ($.fn.DataTable.isDataTable('#feedbackTable')) {
           $('#feedbackTable').DataTable().destroy();
         }
-        $('#feedbackTable').DataTable({ pageLength: 5, order: [[0, 'desc']] });
+        $('#feedbackTable').DataTable({ pageLength: 5, order: [[0, 'asc']] });
       }
 
       console.log("Feedbacks loaded:", data.length);
@@ -158,6 +158,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* =========== DOWNLOAD Excel ============================= */
   document.getElementById("downloadBtn").onclick = () => {
     window.location.href = `${backendUrl}/feedbacks/download`;
+  };
+
+  document.getElementById("clearBtn").onclick = async () => {
+    if (!confirm("Delete ALL feedbacks?")) return;
+    const res = await fetch(`${backendUrl}/feedbacks/clear`, { method: "DELETE" });
+    if (res.ok) {
+      await loadFeedbacks();
+      alert("Feedbacks cleared.");
+    } else {
+      alert("Delete failed!");
+    }
   };
 
   /* =========== UPLOAD PDF / IMAGE ========================= */
