@@ -179,7 +179,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   } else {
     console.warn("Backend offline – table will remain empty");
   }
-});
 
   /* === FEEDBACK TABLE ===================================== */
     async function loadFeedbacks () {
@@ -325,7 +324,7 @@ document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
   };
 
   /* =========== UPLOAD PDF / IMAGE ========================== */
-  document.getElementById("uploadBtn").onclick = async () => {
+   document.getElementById("uploadBtn").onclick = async () => {
     const file = document.getElementById("fileInput").files[0];
     if (!file) { alert("Select a file first!"); return; }
 
@@ -333,10 +332,11 @@ document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
     form.append("file", file);
 
     const endpoint = file.name.toLowerCase().endsWith(".pdf")
-      ? "/upload-pdf/" : "/upload-image/";
+        ? "/upload-pdf/" : "/upload-image/";
 
     try {
-      const r = await fetch(`${backendUrl}${endpoint}`, { method:"POST", body: form });
+      const r = await fetch(`${backendUrl}${endpoint}`,
+                            { method: "POST", body: form });
       const d = await r.json();
       if (d.extracted_text) {
         document.getElementById("prompt").value = d.extracted_text;
@@ -344,8 +344,9 @@ document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
       } else {
         alert("No text found.");
       }
-    } catch { alert("Backend unreachable."); }
+    } catch {
+      alert("Backend unreachable.");
+    }
   };
-});
-
-document.getElementById("refreshBtn").onclick = loadFeedbacks;
+ document.getElementById("refreshBtn").onclick = loadFeedbacks;
+});  
