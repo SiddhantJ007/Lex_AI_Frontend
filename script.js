@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       $('#feedbackTable').DataTable({ pageLength:5, order:[[0,'desc']] });
             }
-          } catch { console.warn('Backend offline – table not refreshed'); }
+          catch { console.warn('Backend offline – table not refreshed'); }
         }
         
         /* manual refresh */
