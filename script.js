@@ -184,14 +184,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* === FEEDBACK TABLE ===================================== */
     async function loadFeedbacks () {
   try {
-    const r = await fetch(`${backendUrl}/feedbacks/`);
+    const r = await fetch(`${backendUrl}/feedbacks/`, {cache:"no-store"});
     if (!r.ok) throw new Error("backend " + r.status);
     const data = await r.json();
 
     const tbody = document
         .getElementById("feedbackTable")
         .querySelector("tbody");
-    tbody.innerHTML = "";               // clear
+    tbody.innerHTML = "";                 // clear old rows
 
     data.forEach(fb => {
       tbody.insertAdjacentHTML("beforeend", `
@@ -204,15 +204,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         </tr>`);
     });
 
+    // show / hide ‘no rows’ message
     document.getElementById('noRowsMsg').style.display =
-    data.length ? 'none' : 'block';
-      
-    // optional: re‑init DataTable
+      data.length ? 'none' : 'block';
+
+    // make the table visible
+    document.getElementById('feedbackTable').style.display = 'table';
+
+    // (re‑)initialise DataTables if present
     if ($.fn.DataTable) {
-      if ($.fn.DataTable.isDataTable("#feedbackTable")) {
+      if ($.fn.DataTable.isDataTable('#feedbackTable')) {
         $('#feedbackTable').DataTable().destroy();
       }
-      $('#feedbackTable').DataTable({ pageLength: 5, order: [[0,"desc"]] });
+      $('#feedbackTable').DataTable({ pageLength: 5, order: [[0, 'desc']] });
     }
 
     console.log("Feedbacks loaded:", data.length);
@@ -222,24 +226,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 }
 
-    document.getElementById('feedbackTable').style.display = 'table';
+/* --- one‑time bindings --------------------------------------- */
+document.getElementById('refreshBtn').onclick = loadFeedbacks;
 
-    if ($.fn.DataTable) {                // (re‑)initialise
-      if ($.fn.DataTable.isDataTable('#feedbackTable')) {
-        $('#feedbackTable').DataTable().destroy();
-      }
-      $('#feedbackTable').DataTable({ pageLength:5, order:[[0,'desc']] });
-            } catch { console.warn('Backend offline – table not refreshed'); }
-        }
-        
-        /* manual refresh */
-        document.getElementById('refreshBtn').onclick = loadFeedbacks;
-        
-        /* auto‑reload after Good/Bad succeeds */
-        async function sendFeedback(type) {
-          // unchanged POST body
-          if (res.ok) loadFeedbacks();
-        }
+async function sendFeedback(type) {
+  // … existing POST logic …
+  if (res.ok) loadFeedbacks();    // auto‑refresh after Good/Bad
+}
 
   /* =========== GET TRANSLATION ============================= */
   document.getElementById("translateBtn").onclick = async (e) => {
