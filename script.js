@@ -156,39 +156,54 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
   document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
-
+  document.getElementById("BadBtn").onclick = () => sendFeedback("Bad");
+  
   document.getElementById("badBtn").onclick = async () => {
   if (!window.currentSession) { alert("Translate something first!"); return; }
 
-  const reason = prompt("Tell LexAI what needs improvement (30 chars min):");
+  const reason = prompt(
+      "Tell LexAI what needs improvement (≥30 chars):");
   if (!reason || reason.trim().length < 30) {
-    alert("Need a bit more detail to improve it!");
-    return;
+      alert("Need a bit more detail to improve it!");
+      return;
   }
 
   const payload = {
-    ...window.currentSession,           // prompt, translation, language
-    user_id:  localStorage.getItem("lexai_uid") || crypto.randomUUID(),
-    feedback: "Bad",
+    ...window.currentSession,
+    user_id: localStorage.getItem("lexai_uid") ||
+             crypto.randomUUID(),
     reason
   };
 
-  const res = await fetch(`${backendUrl}/feedback/regenerate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const res = await fetch(`${backendUrl}/feedback/regenerate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (!res.ok) { alert("Regeneration failed."); return; }
-  const data = await res.json();
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || res.status);
+    }
 
-  // show the improved translation side‑by‑side
-  document.getElementById("translatedText").textContent =
-      data.new_translation || "(no output)";
+    const data = await res.json();
 
-  // refresh table so user sees both entries
-  await loadFeedbacks();
-  };
+    // show the improved translation
+    document.getElementById("translatedText").textContent =
+        data.new_translation;
+    // update currentSession to new “good” line
+    window.currentSession.original_prompt  = data.improved_prompt;
+    window.currentSession.translated_text  = data.new_translation;
+
+    await loadFeedbacks();               // refresh table
+    alert("Improved version generated!");
+
+  } catch (e) {
+    console.error(e);
+    alert("Regeneration failed – see console.");
+  }
+};
 
   /* =========== COPY button ================================ */
   document.getElementById("copyBtn").onclick = () => {
