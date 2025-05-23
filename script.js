@@ -24,6 +24,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* only try to load feedbacks if ping succeeded */
   if (backendUp) {
     await loadFeedbacks();             // fills the table
+    if (!window._filterBound) {
+      document.getElementById("filterSelect").onchange = () => {
+        const wanted = document.getElementById("filterSelect").value;
+        $('#feedbackTable')
+          .DataTable()
+          .column(4)                               // Feedback column
+          .search(wanted === "all" ? "" : wanted, true, false)
+          .draw();
+      };
+      window._filterBound = true;
+    }
   } else {
     console.warn("Backend offline – table will remain empty");
   }
@@ -73,15 +84,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  document.getElementById("filterSelect").onchange = () => {
-  const wanted = document.getElementById("filterSelect").value;
-  $('#feedbackTable')
-    .DataTable()
-    .column(4)                    // “Feedback” column
-    .search(wanted === "all" ? "" : wanted)
-    .draw();
-  };
-  
   /* --- one‑time bindings ---------------------------------- */
   document.getElementById('refreshBtn').onclick = loadFeedbacks;
 
