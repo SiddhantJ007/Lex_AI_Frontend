@@ -154,7 +154,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
   document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
-  document.getElementById("badBtn").onclick  = () => sendFeedback("Bad");
+
+  document.getElementById("badBtn").onclick = async () => {
+  if (!window.currentSession) { alert("Translate something first!"); return; }
+
+  const reason = prompt("Tell LexAI what needs improvement (30 chars min):");
+  if (!reason || reason.trim().length < 30) {
+    alert("Need a bit more detail to improve it!");
+    return;
+  }
+
+  const payload = {
+    ...window.currentSession,           // prompt, translation, language
+    user_id:  localStorage.getItem("lexai_uid") || crypto.randomUUID(),
+    feedback: "Bad",
+    reason
+  };
+
+  const res = await fetch(`${backendUrl}/feedback/regenerate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) { alert("Regeneration failed."); return; }
+  const data = await res.json();
+
+  // show the improved translation side‑by‑side
+  document.getElementById("translatedText").textContent =
+      data.new_translation || "(no output)";
+
+  // refresh table so user sees both entries
+  await loadFeedbacks();
+  };
 
   /* =========== COPY button ================================ */
   document.getElementById("copyBtn").onclick = () => {
