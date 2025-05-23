@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
   document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
-  document.getElementById("BadBtn").onclick = () => sendFeedback("Bad");
+  document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
   document.getElementById("badBtn").onclick = async () => {
   if (!window.currentSession) { alert("Translate something first!"); return; }
