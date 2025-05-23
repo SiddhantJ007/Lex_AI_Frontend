@@ -199,8 +199,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   /* =========== DOWNLOAD Excel ============================= */
-  document.getElementById("downloadBtn").onclick = () => {
-    window.location.href = `${backendUrl}/feedbacks/download`;
+  document.getElementById("downloadBtn").onclick = async () => {
+    const filter = document.getElementById("filterSelect").value;
+    let url = `${backendUrl}/feedbacks/download`;
+    if (filter !== "all") url += `?type=${filter}`;
+    // attempt fetch first to catch 404 and alert cleanly
+    const r = await fetch(url, { method:"GET" });
+    if (r.ok) {
+      window.location.href = url;          // trigger real download
+    } else {
+      alert("No feedbacks match this filter yet.");
+    }
   };
 
   document.getElementById("clearBtn").onclick = async () => {
