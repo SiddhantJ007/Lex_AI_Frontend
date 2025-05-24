@@ -42,7 +42,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* === FEEDBACK TABLE ===================================== */
   async function loadFeedbacks () {
     try {
-      const r = await fetch(`${backendUrl}/feedbacks/`, { cache: "no-store" });
+      const r = await fetch(
+        `${backendUrl}/feedbacks/?_=${Date.now()}`,  
+        { cache:"no-store" }                          
+      );
+      
       if (!r.ok) throw new Error("backend " + r.status);
       const data = await r.json();
 
