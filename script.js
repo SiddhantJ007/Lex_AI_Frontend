@@ -116,11 +116,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("feedbackControls").style.display = "block";
 
       window.currentSession = {
-        original_prompt : prompt,
-        translated_text : data.translated_text,
-        target_language : selOpt.text
-      };
-
+      original_prompt : prompt,
+      translated_text : data.translated_text,
+      // store BOTH:
+      lang_code       : target,        // e.g. "FR"
+      lang_name       : selOpt.text    // e.g. "French"
+    };
+      
     } catch { alert("Backend unreachable."); }
   };
 
@@ -176,10 +178,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const payload = {
-    ...window.currentSession,
-    user_id: localStorage.getItem("lexai_uid") ||
-             crypto.randomUUID(),
-    reason
+  user_id:         userId,
+  original_prompt: window.currentSession.original_prompt,
+  translated_text: window.currentSession.translated_text,
+  target_language: window.currentSession.lang_code,   // <- changed
+  reason:          reasonText                         // from the modal
   };
 
   try {
