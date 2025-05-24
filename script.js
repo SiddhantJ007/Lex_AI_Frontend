@@ -163,9 +163,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const reason = prompt(
       "Tell LexAI what needs improvement (≥30 chars):");
-  if (!reason || reason.trim().length < 30) {
-      alert("Need a bit more detail to improve it!");
-      return;
+  if (reason.trim().length < 5) {
+  alert("Please add at least a few words so we can improve the copy.");
+  return;
+  }
+  if (reason.trim().length < 30) {
+    alert("The more detail you give, the better the rewrite will be — but we’ll try!");
   }
 
   const payload = {
