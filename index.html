@@ -96,7 +96,29 @@
         #feedbackControls button:nth-child(1) { background-color: #27ae60; } /* Good */
         #feedbackControls button:nth-child(2) { background-color: #e74c3c; } /* Bad */
         #feedbackControls button:nth-child(3) { background-color: #1e90ff; } /* Refresh */
+
+        #spinner {
+          position: fixed; inset: 0;               /* full‑screen overlay   */
+          backdrop-filter: blur(2px);
+          background: rgba(255,255,255,.6);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          z-index: 9999;
+        }
+        .hidden      { display:none !important; }
         
+        /* CSS loader (≈ 2 KB) */
+        .lds-ring { display:inline-block; width:64px; height:64px; }
+        .lds-ring div {
+          box-sizing:border-box; display:block; position:absolute;
+          width:51px; height:51px; margin:6px; border:6px solid #3498db;
+          border-radius:50%; animation: lds 1.2s cubic-bezier(.5,0,.5,1) infinite;
+          border-color:#3498db transparent transparent transparent;
+        }
+        @keyframes lds {
+          0% { transform: rotate(0deg); }
+          100%{ transform: rotate(360deg); }
+        }
     </style>
     <style>
       #feedbackTable      { width:100%; margin-top:20px; border-collapse:collapse; }
