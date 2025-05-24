@@ -164,54 +164,54 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
-  document.getElementById("badBtn").onclick = async () => {
-  if (!window.currentSession) { alert("Translate something first!"); return; }
+  /* ---------------- Bad → ask reason → regenerate ------------- */
+document.getElementById("badBtn").onclick = async () => {
+  if (!window.currentSession) { alert("Translate first!"); return; }
 
   const reason = prompt(
-      "Tell LexAI what needs improvement in detail");
-  if (reason.trim().length < 5) {
-  alert("Please add at least a few words so we can improve the copy.");
-  return;
-  }
-  if (reason.trim().length < 30) {
-    alert("The more detail you give, the better the rewrite will be — but we’ll try!");
-  }
+    "What’s wrong with this translation?\n" +
+    "(say e.g. “tone too formal”, “missing key word”, …)"
+  );
+  if (!reason) return;
 
-  const payload = {
-  user_id:         userId,
-  original_prompt: window.currentSession.original_prompt,
-  translated_text: window.currentSession.translated_text,
-  target_language: window.currentSession.lang_code,   // <- changed
-  reason:          reasonText                         // from the modal
-  };
+  // show spinner & disable controls
+  document.getElementById("spinner").classList.remove("hidden");
+  document.querySelectorAll("button,select,textarea,input")
+          .forEach(el => el.disabled = true);
 
   try {
+    const payload = {
+      user_id:         window.lexai_uid,
+      original_prompt: window.currentSession.original_prompt,
+      translated_text: window.currentSession.translated_text,
+      target_language: window.currentSession.lang_code,
+      reason          : reason
+    };
+
     const res = await fetch(`${backendUrl}/feedback/regenerate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      method : "POST",
+      headers: { "Content-Type":"application/json" },
+      body   : JSON.stringify(payload)
     });
+    if (!res.ok) throw await res.json();
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || res.status);
-    }
+    const out = await res.json();          // << new translation!
+    // update UI
+    document.getElementById("translatedText").textContent = out.new_translation;
+    window.currentSession.translated_text                 = out.new_translation;
+    window.currentSession.original_prompt                 = out.improved_prompt;
 
-    const data = await res.json();
+    await loadFeedbacks();                 // refresh table
 
-    // show the improved translation
-    document.getElementById("translatedText").textContent =
-        data.new_translation;
-    // update currentSession to new “good” line
-    window.currentSession.original_prompt  = data.improved_prompt;
-    window.currentSession.translated_text  = data.new_translation;
-
-    await loadFeedbacks();               // refresh table
-    alert("Improved version generated!");
-
+    alert("Done! Translation regenerated.");
   } catch (e) {
     console.error(e);
     alert("Regeneration failed – see console.");
+  } finally {
+    // hide spinner & re‑enable
+    document.getElementById("spinner").classList.add("hidden");
+    document.querySelectorAll("button,select,textarea,input")
+            .forEach(el => el.disabled = false);
   }
 };
 
@@ -238,14 +238,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   document.getElementById("clearBtn").onclick = async () => {
-    if (!confirm("Delete ALL feedbacks?")) return;
-    const res = await fetch(`${backendUrl}/feedbacks/clear`, { method: "DELETE" });
-    if (res.ok) {
-      await loadFeedbacks();
-      alert("Feedbacks cleared.");
-    } else {
-      alert("Delete failed!");
-    }
+    if (!confirm("Delete ALL feedback rows – are you sure?")) return;
+    const r = await fetch(`${backendUrl}/feedbacks/clear`, {method:"DELETE"});
+    if (r.ok) { await loadFeedbacks(); alert("Table cleared."); }
+    else      { alert("Failed to clear – see console."); }
   };
 
   /* =========== UPLOAD PDF / IMAGE ========================= */
