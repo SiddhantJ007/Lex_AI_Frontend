@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!window.currentSession) { alert("Translate something first!"); return; }
 
   const reason = prompt(
-      "Tell LexAI what needs improvement (≥30 chars):");
+      "Tell LexAI what needs improvement in detail");
   if (reason.trim().length < 5) {
   alert("Please add at least a few words so we can improve the copy.");
   return;
