@@ -105,6 +105,16 @@
           align-items: center; justify-content: center;
           z-index: 9999;
         }
+
+        #spinner_1 {
+          position: fixed; inset: 0;               /* full‑screen overlay   */
+          backdrop-filter: blur(2px);
+          background: rgba(255,255,255,.6);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          z-index: 9999;
+        }
+        
         .hidden      { display:none !important; }
         
         /* CSS loader (≈ 2 KB) */
@@ -250,6 +260,10 @@
         <div id="spinner" class="hidden">
       <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
       <p>Please wait … improving & translating</p>
+    </div>
+    <div id="spinner_1" class="hidden">
+      <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+      <p>Hang on translating...</p>
     </div>
 </body>
 </html>
