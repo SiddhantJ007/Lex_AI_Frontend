@@ -1,7 +1,7 @@
 const backendUrl = "https://lex-ai.duckdns.org";
 
 function showSpin(on=true){
-  document.getElementById("spinner").classList[on ? "remove":"add"]("hidden");
+  document.getElementById("spinner_1").classList[on ? "remove":"add"]("hidden");
   document.querySelectorAll("button,select,textarea,input")
           .forEach(el => el.disabled = on);
 }
