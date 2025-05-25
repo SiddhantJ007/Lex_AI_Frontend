@@ -155,7 +155,7 @@ async function loadFeedbacks () {
       user_id:          userId,
       original_prompt:  window.currentSession.original_prompt,
       translated_text:  window.currentSession.translated_text,
-      target_language:  window.currentSession.target_language,
+      target_language:  window.currentSession.lang_code,
       feedback:         type,         
       reason:           null
     };
