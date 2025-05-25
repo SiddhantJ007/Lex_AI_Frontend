@@ -46,47 +46,39 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* === FEEDBACK TABLE ===================================== */
+  let dt = null;
+  
   async function loadFeedbacks () {
     try {
-      const r = await fetch(
-        `${backendUrl}/feedbacks/?_=${Date.now()}`,  
-        { cache:"no-store" }                          
-      );
-      
+      const r = await fetch(`${backendUrl}/feedbacks/`, { cache: "no-store" });
       if (!r.ok) throw new Error("backend " + r.status);
-      const data = await r.json();
-
-      const tbody = document
-        .getElementById("feedbackTable")
-        .querySelector("tbody");
-      tbody.innerHTML = "";                 // clear old rows
-
-      data.forEach(fb => {
-        tbody.insertAdjacentHTML("beforeend", `
-          <tr>
-            <td>${fb.id}</td>
-            <td>${fb.original_prompt}</td>
-            <td>${fb.translated_text}</td>
-            <td>${fb.target_language}</td>
-            <td>${fb.feedback}</td>
-          </tr>`);
-      });
-
-      // show / hide ‘no rows’ message
+      const data = await r.json();              // ← fresh rows
+  
+      /* ----------- initialise once, thereafter just update ------- */
+      if (dt === null) {
+        dt = $('#feedbackTable').DataTable({
+          data,
+          columns: [
+            { data: 'id' },
+            { data: 'original_prompt' },
+            { data: 'translated_text' },
+            { data: 'target_language' },
+            { data: 'feedback' }
+          ],
+          pageLength: 5,
+          order: [[0, 'desc']]
+        });
+        document.getElementById('feedbackTable').style.display = 'table';
+      } else {
+        dt.clear();          // wipe previous rows
+        dt.rows.add(data);   // add new rows
+        dt.draw(false);      // false = keep current page/scroll
+      }
+  
+      /* show / hide “no rows” message */
       document.getElementById('noRowsMsg').style.display =
         data.length ? 'none' : 'block';
-
-      // make the table visible
-      document.getElementById('feedbackTable').style.display = 'table';
-
-      // (re‑)initialise DataTables if present
-      if ($.fn.DataTable) {
-        if ($.fn.DataTable.isDataTable('#feedbackTable')) {
-          $('#feedbackTable').DataTable().destroy();
-        }
-        $('#feedbackTable').DataTable({ pageLength: 5, order: [[0, 'asc']] });
-      }
-
+  
       console.log("Feedbacks loaded:", data.length);
     } catch (e) {
       console.error("loadFeedbacks failed:", e);
