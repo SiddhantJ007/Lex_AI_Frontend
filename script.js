@@ -156,7 +156,8 @@ async function loadFeedbacks () {
       original_prompt:  window.currentSession.original_prompt,
       translated_text:  window.currentSession.translated_text,
       target_language:  window.currentSession.target_language,
-      feedback:         type          // "Good" or "Bad"
+      feedback:         type,         
+      reason:           null
     };
 
     const res = await fetch(`${backendUrl}/feedback/`, {
