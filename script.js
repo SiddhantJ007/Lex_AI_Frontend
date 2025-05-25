@@ -2,16 +2,6 @@ const backendUrl = "https://lex-ai.duckdns.org";
 
 let dt = null; 
 
-const CODE2NAME = {
-  AR:"Arabic", BG:"Bulgarian", ZH:"Chinese", CS:"Czech", DA:"Danish",
-  NL:"Dutch",  EN:"English",   ET:"Estonian", FI:"Finnish", FR:"French",
-  DE:"German", EL:"Greek",     HU:"Hungarian", ID:"Indonesian", IT:"Italian",
-  JA:"Japanese", KO:"Korean",  LV:"Latvian",  LT:"Lithuanian",
-  NB:"Norwegian (Bokmål)", PL:"Polish", PT:"Portuguese", RO:"Romanian",
-  RU:"Russian", SK:"Slovak", SL:"Slovenian", ES:"Spanish", SV:"Swedish",
-  TR:"Turkish", UK:"Ukrainian"
-};
-
 function showSpin(on=true){
   document.getElementById("spinner_1").classList[on ? "remove":"add"]("hidden");
   document.querySelectorAll("button,select,textarea,input")
@@ -66,16 +56,13 @@ async function loadFeedbacks () {
     if (!res.ok) throw new Error(`backend ${res.status}`);
 
     const data  = await res.json();
-
-    const langDisplay =
-      CODE2NAME[fb.target_language] || fb.target_language; 
     
     /* transform to DataTables row‑array once so we can reuse it */
     const rows = data.map(fb => [
       fb.id,
       fb.original_prompt,
       fb.translated_text,
-      langDisplay,
+      fb.target_language,
       fb.feedback
     ]);
 
