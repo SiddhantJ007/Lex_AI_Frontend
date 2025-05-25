@@ -1,5 +1,7 @@
 const backendUrl = "https://lex-ai.duckdns.org";
 
+let dt = null; 
+
 function showSpin(on=true){
   document.getElementById("spinner_1").classList[on ? "remove":"add"]("hidden");
   document.querySelectorAll("button,select,textarea,input")
@@ -45,9 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.warn("Backend offline – table will remain empty");
   }
 
-  /* === FEEDBACK TABLE ===================================== */
-  
-let dt = null;          
+  /* === FEEDBACK TABLE ===================================== */         
   
 async function loadFeedbacks () {
   try {
