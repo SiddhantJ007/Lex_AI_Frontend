@@ -46,45 +46,58 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* === FEEDBACK TABLE ===================================== */
-  let dt = null;
   
-  async function loadFeedbacks () {
-    try {
-      const r = await fetch(`${backendUrl}/feedbacks/`, { cache: "no-store" });
-      if (!r.ok) throw new Error("backend " + r.status);
-      const data = await r.json();              // ← fresh rows
+let dt = null;          
   
-      /* ----------- initialise once, thereafter just update ------- */
-      if (dt === null) {
-        dt = $('#feedbackTable').DataTable({
-          data,
-          columns: [
-            { data: 'id' },
-            { data: 'original_prompt' },
-            { data: 'translated_text' },
-            { data: 'target_language' },
-            { data: 'feedback' }
-          ],
-          pageLength: 5,
-          order: [[0, 'desc']]
-        });
-        document.getElementById('feedbackTable').style.display = 'table';
-      } else {
-        dt.clear();          // wipe previous rows
-        dt.rows.add(data);   // add new rows
-        dt.draw(false);      // false = keep current page/scroll
-      }
-  
-      /* show / hide “no rows” message */
-      document.getElementById('noRowsMsg').style.display =
-        data.length ? 'none' : 'block';
-  
-      console.log("Feedbacks loaded:", data.length);
-    } catch (e) {
-      console.error("loadFeedbacks failed:", e);
-      alert("Could not load feedbacks – see console.");
+async function loadFeedbacks () {
+  try {
+    // always pull the freshest state from the API
+    const res = await fetch(`${backendUrl}/feedbacks/`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`backend ${res.status}`);
+
+    const data  = await res.json();
+
+    /* transform to DataTables row‑array once so we can reuse it */
+    const rows = data.map(fb => [
+      fb.id,
+      fb.original_prompt,
+      fb.translated_text,
+      fb.target_language,
+      fb.feedback
+    ]);
+
+    if (!dt) {
+      /* first call → create the table */
+      dt = $('#feedbackTable').DataTable({
+        data:    rows,
+        columns: [
+          { title: "ID" },
+          { title: "Original Prompt" },
+          { title: "Translated Text" },
+          { title: "Language" },
+          { title: "Feedback" }
+        ],
+        pageLength: 5,
+        order:      [[0, 'asc']]      // ascending ID as requested
+      });
+      $('#feedbackTable').show();     // reveal the table once built
+    } else {
+      /* subsequent calls → just refresh rows (no redraw flicker) */
+      dt.clear();
+      dt.rows.add(rows);
+      dt.draw(false);                 // keep current paging position
     }
+
+    /* “No rows” helper message */
+    $('#noRowsMsg').toggle(rows.length === 0);
+
+    console.log(`Feedbacks loaded: ${rows.length}`);
+
+  } catch (e) {
+    console.error("loadFeedbacks failed:", e);
+    alert("Could not load feedbacks – see console.");
   }
+}
 
   /* --- one‑time bindings ---------------------------------- */
   document.getElementById('refreshBtn').onclick = loadFeedbacks;
