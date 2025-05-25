@@ -1,5 +1,11 @@
 const backendUrl = "https://lex-ai.duckdns.org";
 
+function showSpin(on=true){
+  document.getElementById("spinner").classList[on ? "remove":"add"]("hidden");
+  document.querySelectorAll("button,select,textarea,input")
+          .forEach(el => el.disabled = on);
+}
+
 /* ---------- tiny helper ---------- */
 async function pingBackend() {
   try {
@@ -103,6 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!prompt) { alert("Enter tagline first!"); return; }
     if (selOpt.disabled) { alert("Language coming soon!"); return; }
 
+    showSpin(true);    
     try {
       const res = await fetch(`${backendUrl}/full-process/`, {
         method: "POST",
@@ -124,6 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
       
     } catch { alert("Backend unreachable."); }
+    finally   { showSpin(false); }
   };
 
   /* =========== GOOD / BAD buttons ========================= */
