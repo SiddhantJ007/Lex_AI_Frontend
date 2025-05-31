@@ -175,7 +175,39 @@ async function loadFeedbacks () {
       alert("Feedback failed! See console.");
     }
   }
-  document.getElementById("goodBtn").onclick = () => sendFeedback("Good");
+  
+  async function askAnother() {
+  return confirm("Happy with this?  \nPress OK for another take, Cancel to stop.");
+}
+
+document.getElementById("goodBtn").onclick = async () => {
+  let wantMore = true, variant = 1;
+  while (wantMore) {
+    await sendFeedback("Good");          // existing
+    wantMore = await askAnother();
+    if (!wantMore) break;
+
+    // fetch new variant
+    const res = await fetch(`${backendUrl}/full-process/?variant=${variant++}`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ prompt: currentSession.original_prompt,
+                             target_language: currentSession.lang_code })
+    });
+    const d = await res.json();
+    // append instead of replace
+    document.getElementById("translatedText").value += "\n\n—‑\n" + d.translated_text;
+    // auto‑Good row so table stays in sync
+    await fetch(`${backendUrl}/feedback/`,{
+       method:"POST", headers:{ "Content-Type":"application/json" },
+       body: JSON.stringify({ ...currentSession,
+                              translated_text:d.translated_text,
+                              feedback:"Good (more)" })
+    });
+    await loadFeedbacks();               // live refresh
+  }
+};
+
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
