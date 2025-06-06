@@ -361,4 +361,41 @@ document.getElementById("badBtn").onclick = async () => {
     }
   };
 
+  async function askVariants(n = 5){
+  spinnerOn("Generating ideas…");
+  const res = await fetch(`${backendUrl}/copy-variants/`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        prompt:  currentSession.original_prompt,
+        target_language: currentSession.lang_code,
+        count: n
+      })
+  });
+  const arr = await res.json();               // [{variant_no, original_prompt, translated_text}, …]
+  spinnerOff();
+
+  const box = document.getElementById("variantsBox");
+  box.classList.remove("hidden");
+  arr.forEach(v => {
+     box.insertAdjacentHTML("beforeend",
+       `<div class="varRow">
+           <span>${v.translated_text}</span>
+           <button onclick="rateVariant(${v.variant_no},'Good')">👍</button>
+           <button onclick="rateVariant(${v.variant_no},'Bad')">👎</button>
+        </div>`);
+  });
+  // push into feedback table immediately (optional)
+  loadFeedbacks();
+}
+
+async function rateVariant(no, type){
+  const vRow = [...document.querySelectorAll(".varRow")].find(r=>r.textContent.includes(no));
+  const text = vRow.querySelector("span").textContent;
+  await sendFeedbackVariant(no, text, type);  // tiny helper that POSTs /feedback/
+  loadFeedbacks();
+}
+
+document.getElementById("moreIdeasBtn").onclick = () => askVariants(5);
+  
 });
