@@ -2,6 +2,28 @@ const backendUrl = "https://lex-ai.duckdns.org";
 
 let dt = null; 
 
+/* simple spinner helpers – no‑op if you don't want a loader */
+function spinnerOn(msg = "Please wait…") {
+  let s = document.getElementById("lexaiSpinner");
+  if (!s) {                                 // create once
+    s = document.createElement("div");
+    s.id = "lexaiSpinner";
+    Object.assign(s.style, {
+      position:"fixed", inset:0, zIndex:9999,
+      background:"rgba(255,255,255,0.7)", display:"flex",
+      alignItems:"center", justifyContent:"center",
+      fontFamily:"Segoe UI, sans-serif", fontSize:"1.1rem"
+    });
+    document.body.appendChild(s);
+  }
+  s.textContent = msg;
+  s.style.display = "flex";
+}
+function spinnerOff() {
+  const s = document.getElementById("lexaiSpinner");
+  if (s) s.style.display = "none";
+}
+
 function showSpin(on=true){
   document.getElementById("spinner_1").classList[on ? "remove":"add"]("hidden");
   document.querySelectorAll("button,select,textarea,input")
