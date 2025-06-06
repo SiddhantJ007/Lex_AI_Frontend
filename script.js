@@ -197,72 +197,111 @@ async function loadFeedbacks () {
     }
   }
 
-async function saveGoodRow(session) {
+/* ------------------ GOOD button click ------------------- */
+
+/* ---------- GOOD button workflow --------------------------------- */
+document.getElementById("goodBtn").onclick = async () => {
+  if (!window.currentSession) {
+    return alert("Translate something first!");
+  }
+
+  /* 1️⃣  store the *current* translation as GOOD immediately */
+  await sendFeedback("Good", "");          // ↓ see helper just after this
+  await loadFeedbacks();                   // refresh table
+
+  /* 2️⃣  ask if user wants more ideas */
+  if (!confirm("Saved!  Would you like 5 alternative suggestions?")) return;
+
+  spinnerOn("Generating ideas…");
+  try {
+    const r = await fetch(`${backendUrl}/copy-variants/`, {
+      method : "POST",
+      headers: { "Content-Type":"application/json" },
+      body   : JSON.stringify({
+                  prompt          : currentSession.original_prompt,
+                  target_language : currentSession.lang_code,
+                  count           : 5 })
+    });
+    const data = await r.json();            // {variants:[…]}
+
+    showVariants(data.variants);            // render panel (next block)
+  } catch (e) {
+    console.error(e);
+    alert("Could not fetch variants.");
+  } finally {
+    spinnerOff();
+  }
+};
+
+/* helper that POSTs to /feedback/ exactly like before -------------- */
+async function sendFeedback(type, reason="") {
   const payload = {
-    user_id: localStorage.getItem("lexai_uid") || crypto.randomUUID(),
-    original_prompt: session.original_prompt,
-    translated_text: session.translated_text,
-    target_language: session.lang_name,   // ← you store both code & name
-    feedback: "Good"
+    user_id         : getUserId(),      // your existing helper
+    original_prompt : currentSession.original_prompt,
+    translated_text : currentSession.translated_text,
+    target_language : currentSession.lang_name,
+    feedback        : type,
+    reason
   };
-  await fetch(`${backendUrl}/feedback/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  return fetch(`${backendUrl}/feedback/`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify(payload)
   });
 }
 
-/* ------------------ GOOD button click ------------------- */
-document.getElementById("goodBtn").onclick = async () => {
-  if (!window.currentSession) return alert("Translate first!");
-
-  spinnerOn("Generating ideas…");
-  const res   = await fetch(`${backendUrl}/copy-variants/`, {
-                 method:"POST", headers:{"Content-Type":"application/json"},
-                 body: JSON.stringify({
-                   prompt          : currentSession.original_prompt,
-                   target_language : currentSession.lang_code,
-                   count           : 5      // or 10
-                 })
-               });
-  spinnerOff();
-  const list  = await res.json();
-  showVariants(list);
-};
-
-/* render list */
-function showVariants(arr){
-  const ul = document.getElementById("variantList");
-  ul.innerHTML = "";
-  arr.forEach(v => {
-    ul.insertAdjacentHTML("beforeend",
-      `<li data-id="${v.row_id}">
-         <span>${v.translated_text}</span>
-         <button class="thumb up">👍</button>
-         <button class="thumb dn">👎</button>
-       </li>`);
+/* -------------- Variant panel ------------------------------------ */
+function showVariants(list) {
+  // simple overlay – add once to DOM if not present
+  let dlg = document.getElementById("variantDlg");
+  if (!dlg) {
+    dlg = document.createElement("div");
+    dlg.id = "variantDlg";
+    dlg.innerHTML = `
+      <style>
+        #variantDlg{position:fixed;inset:0;background:#0008;display:flex;
+                    align-items:center;justify-content:center;z-index:9999}
+        #variantBox{background:#fff;padding:24px;border-radius:8px;
+                    max-width:600px;width:90%}
+        #variantBox li{margin:8px 0;padding:8px;border:1px solid #ccc;
+                       border-radius:6px;list-style:none}
+        .vBtns{float:right}
+        .vBtns button{margin-left:6px}
+      </style>
+      <div id="variantBox">
+        <h3>Pick the variants you like</h3>
+        <ul id="vList"></ul>
+        <button id="closeVar">Close</button>
+      </div>`;
+    document.body.appendChild(dlg);
+    document.getElementById("closeVar").onclick = () => dlg.remove();
+  }
+  const vList = dlg.querySelector("#vList");
+  vList.innerHTML = "";
+  list.forEach((txt,i)=>{
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>${txt}</span>
+      <span class="vBtns">
+        <button class="yes">👍</button>
+        <button class="no">👎</button>
+      </span>`;
+    li.querySelector(".yes").onclick = async ()=>{
+      await sendFeedback("Good", `variant #${i+1}`);
+      window.currentSession.translated_text = txt;   // display it
+      document.getElementById("translatedText").textContent = txt;
+      await loadFeedbacks();
+      li.style.opacity = .4;
+    };
+    li.querySelector(".no").onclick = async ()=>{
+      await sendFeedback("Bad", `variant #${i+1}`);
+      await loadFeedbacks();
+      li.style.opacity = .4;
+    };
+    vList.appendChild(li);
   });
-  document.getElementById("variantPanel").style.display = "block";
+  dlg.style.display = "flex";
 }
-
-/* thumbs handler (event‑delegation) */
-document.getElementById("variantList").onclick = async e => {
-  if(!e.target.classList.contains("thumb")) return;
-  const li   = e.target.closest("li");
-  const row  = li.dataset.id;
-  const type = e.target.classList.contains("up") ? "Good" : "Bad";
-
-  await fetch(`${backendUrl}/feedback/`,{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ row_id:row, feedback:type })
-  });
-  loadFeedbacks();              // live refresh
-  li.style.opacity = .3;        // quick visual cue
-};
-
-/* close panel */
-closePanel.onclick = ()=> variantPanel.style.display = "none";
-
+  
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
