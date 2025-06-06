@@ -213,7 +213,7 @@ async function saveGoodRow(session) {
 }
 
 /* ------------------ GOOD button click ------------------- */
-goodBtn.onclick = async () => {
+document.getElementById("goodBtn").onclick = async () => {
   if (!window.currentSession) return alert("Translate first!");
 
   spinnerOn("Generating ideas…");
