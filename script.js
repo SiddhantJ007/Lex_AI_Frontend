@@ -405,7 +405,4 @@ async function rateVariant(no, type){
   await sendFeedbackVariant(no, text, type);  // tiny helper that POSTs /feedback/
   loadFeedbacks();
 }
-
-document.getElementById("moreIdeasBtn").onclick = () => askVariants(5);
-  
 });
