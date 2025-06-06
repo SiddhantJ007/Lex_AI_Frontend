@@ -175,33 +175,60 @@ async function loadFeedbacks () {
     }
   }
 
-document.getElementById("goodBtn").onclick = async () => {
-  if (!window.currentSession) return alert("Translate something first!");
-
-  const wantMore = confirm(
-      "Glad you like it! Would you like another alternative?");
-
-  // 1) store the GOOD feedback
-  await sendFeedback("Good");
-
-  if (!wantMore) return;           // user is done
-
-  // 2) ask backend for ONE more variant (same char length)
-  const res = await fetch(`${backendUrl}/full-process/`, {
-    method : "POST",
-    headers: {"Content-Type":"application/json"},
-    body   : JSON.stringify({
-               prompt         : window.currentSession.original_prompt,
-               target_language: window.currentSession.lang_code,
-               extra_variant  : true           // new optional flag
-             })
+async function saveGoodRow(session) {
+  const payload = {
+    user_id: localStorage.getItem("lexai_uid") || crypto.randomUUID(),
+    original_prompt: session.original_prompt,
+    translated_text: session.translated_text,
+    target_language: session.lang_name,   // ← you store both code & name
+    feedback: "Good"
+  };
+  await fetch(`${backendUrl}/feedback/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
+}
 
-  const data = await res.json();
-  // 3) append & display
-  const lbl = document.getElementById("translatedText");
-  lbl.textContent += "\n• " + data.translated_text;   // append
-  await loadFeedbacks();                              // refresh table
+/* ------------------ GOOD button click ------------------- */
+document.getElementById("goodBtn").onclick = async () => {
+  if (!window.currentSession) return alert("Translate first!");
+  await saveGoodRow(window.currentSession);   // save the first one
+  await loadFeedbacks();                      // refresh table
+
+  /* ask if user wants another variant -------------------- */
+  let variant = 1;
+  while (confirm("Want another alternative?")) {
+    spinnerOn("Fetching new idea…");          // optional
+    const res = await fetch(
+      `${backendUrl}/full-process/?variant=${variant}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt:          window.currentSession.original_prompt,
+          target_language: window.currentSession.lang_code
+        })
+      });
+    const data = await res.json();
+    spinnerOff();
+
+    /* append to label */
+    document.getElementById("translatedText").textContent +=
+      `\n\n• ${data.translated_text}`;
+
+    /* save & show in table */
+    const newSess = {
+      original_prompt : window.currentSession.original_prompt,
+      translated_text : data.translated_text,
+      lang_code       : window.currentSession.lang_code,
+      lang_name       : window.currentSession.lang_name
+    };
+    await saveGoodRow(newSess);
+    await loadFeedbacks();
+
+    variant += 1;   // next loop will ask GPT for a fresh take again
+  }
 };
 
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
