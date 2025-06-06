@@ -213,45 +213,55 @@ async function saveGoodRow(session) {
 }
 
 /* ------------------ GOOD button click ------------------- */
-document.getElementById("goodBtn").onclick = async () => {
+goodBtn.onclick = async () => {
   if (!window.currentSession) return alert("Translate first!");
-  await saveGoodRow(window.currentSession);   // save the first one
-  await loadFeedbacks();                      // refresh table
 
-  /* ask if user wants another variant -------------------- */
-  let variant = 1;
-  while (confirm("Want another alternative?")) {
-    spinnerOn("Fetching new idea…");          // optional
-    const res = await fetch(
-      `${backendUrl}/full-process/?variant=${variant}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt:          window.currentSession.original_prompt,
-          target_language: window.currentSession.lang_code
-        })
-      });
-    const data = await res.json();
-    spinnerOff();
-
-    /* append to label */
-    document.getElementById("translatedText").textContent +=
-      `\n\n• ${data.translated_text}`;
-
-    /* save & show in table */
-    const newSess = {
-      original_prompt : window.currentSession.original_prompt,
-      translated_text : data.translated_text,
-      lang_code       : window.currentSession.lang_code,
-      lang_name       : window.currentSession.lang_name
-    };
-    await saveGoodRow(newSess);
-    await loadFeedbacks();
-
-    variant += 1;   // next loop will ask GPT for a fresh take again
-  }
+  spinnerOn("Generating ideas…");
+  const res   = await fetch(`${backendUrl}/copy-variants/`, {
+                 method:"POST", headers:{"Content-Type":"application/json"},
+                 body: JSON.stringify({
+                   prompt          : currentSession.original_prompt,
+                   target_language : currentSession.lang_code,
+                   count           : 5      // or 10
+                 })
+               });
+  spinnerOff();
+  const list  = await res.json();
+  showVariants(list);
 };
+
+/* render list */
+function showVariants(arr){
+  const ul = document.getElementById("variantList");
+  ul.innerHTML = "";
+  arr.forEach(v => {
+    ul.insertAdjacentHTML("beforeend",
+      `<li data-id="${v.row_id}">
+         <span>${v.translated_text}</span>
+         <button class="thumb up">👍</button>
+         <button class="thumb dn">👎</button>
+       </li>`);
+  });
+  document.getElementById("variantPanel").style.display = "block";
+}
+
+/* thumbs handler (event‑delegation) */
+document.getElementById("variantList").onclick = async e => {
+  if(!e.target.classList.contains("thumb")) return;
+  const li   = e.target.closest("li");
+  const row  = li.dataset.id;
+  const type = e.target.classList.contains("up") ? "Good" : "Bad";
+
+  await fetch(`${backendUrl}/feedback/`,{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ row_id:row, feedback:type })
+  });
+  loadFeedbacks();              // live refresh
+  li.style.opacity = .3;        // quick visual cue
+};
+
+/* close panel */
+closePanel.onclick = ()=> variantPanel.style.display = "none";
 
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
