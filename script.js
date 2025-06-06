@@ -168,7 +168,6 @@ async function loadFeedbacks () {
 
     if (res.ok) {
       await loadFeedbacks();          // refresh table immediately
-      alert("Thanks for your feedback!");
     } else {
       const err = await res.json();
       console.error(err);
