@@ -2,6 +2,15 @@ const backendUrl = "https://lex-ai.duckdns.org";
 
 let dt = null; 
 
+function getUserId () {
+  let id = localStorage.getItem("lexai_uid");
+  if (!id) {                       // first visit → create & store
+    id = crypto.randomUUID();
+    localStorage.setItem("lexai_uid", id);
+  }
+  return id;
+}
+
 /* simple spinner helpers – no‑op if you don't want a loader */
 function spinnerOn(msg = "Please wait…") {
   let s = document.getElementById("lexaiSpinner");
@@ -28,15 +37,6 @@ function showSpin(on=true){
   document.getElementById("spinner_1").classList[on ? "remove":"add"]("hidden");
   document.querySelectorAll("button,select,textarea,input")
           .forEach(el => el.disabled = on);
-}
-
-function getUserId () {
-  let id = localStorage.getItem("lexai_uid");
-  if (!id) {                       // first visit → create & store
-    id = crypto.randomUUID();
-    localStorage.setItem("lexai_uid", id);
-  }
-  return id;
 }
 
 /* ---------- tiny helper ---------- */
