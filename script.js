@@ -78,7 +78,7 @@ async function loadFeedbacks () {
           { title: "Feedback" }
         ],
         pageLength: 5,
-        order:      [[0, 'asc']]      // ascending ID as requested
+        order:      [[0, 'desc']]      // ascending ID as requested
       });
       $('#feedbackTable').show();     // reveal the table once built
     } else {
@@ -175,37 +175,34 @@ async function loadFeedbacks () {
       alert("Feedback failed! See console.");
     }
   }
-  
-  async function askAnother() {
-  return confirm("Happy with this?  \nPress OK for another take, Cancel to stop.");
-}
 
 document.getElementById("goodBtn").onclick = async () => {
-  let wantMore = true, variant = 1;
-  while (wantMore) {
-    await sendFeedback("Good");          // existing
-    wantMore = await askAnother();
-    if (!wantMore) break;
+  if (!window.currentSession) return alert("Translate something first!");
 
-    // fetch new variant
-    const res = await fetch(`${backendUrl}/full-process/?variant=${variant++}`, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ prompt: currentSession.original_prompt,
-                             target_language: currentSession.lang_code })
-    });
-    const d = await res.json();
-    // append instead of replace
-    document.getElementById("translatedText").value += "\n\n—‑\n" + d.translated_text;
-    // auto‑Good row so table stays in sync
-    await fetch(`${backendUrl}/feedback/`,{
-       method:"POST", headers:{ "Content-Type":"application/json" },
-       body: JSON.stringify({ ...currentSession,
-                              translated_text:d.translated_text,
-                              feedback:"Good (more)" })
-    });
-    await loadFeedbacks();               // live refresh
-  }
+  const wantMore = confirm(
+      "Glad you like it! Would you like another alternative?");
+
+  // 1) store the GOOD feedback
+  await sendFeedback("Good");
+
+  if (!wantMore) return;           // user is done
+
+  // 2) ask backend for ONE more variant (same char length)
+  const res = await fetch(`${backendUrl}/full-process/`, {
+    method : "POST",
+    headers: {"Content-Type":"application/json"},
+    body   : JSON.stringify({
+               prompt         : window.currentSession.original_prompt,
+               target_language: window.currentSession.lang_code,
+               extra_variant  : true           // new optional flag
+             })
+  });
+
+  const data = await res.json();
+  // 3) append & display
+  const lbl = document.getElementById("translatedText");
+  lbl.textContent += "\n• " + data.translated_text;   // append
+  await loadFeedbacks();                              // refresh table
 };
 
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
