@@ -30,6 +30,15 @@ function showSpin(on=true){
           .forEach(el => el.disabled = on);
 }
 
+function getUserId () {
+  let id = localStorage.getItem("lexai_uid");
+  if (!id) {                       // first visit → create & store
+    id = crypto.randomUUID();
+    localStorage.setItem("lexai_uid", id);
+  }
+  return id;
+}
+
 /* ---------- tiny helper ---------- */
 async function pingBackend() {
   try {
