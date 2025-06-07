@@ -11,11 +11,11 @@ function getUserId () {
   return id;
 }
 
-function toast(msg){
+/*function toast(msg){
   const t = document.getElementById("lexToast");
   t.textContent = msg;    t.style.display="block";
   setTimeout(()=>{ t.style.display="none"; },2000);
-}
+}*/
 
 /* simple spinner helpers – no‑op if you don't want a loader */
 function spinnerOn(msg = "Please wait…") {
@@ -267,43 +267,58 @@ async function requestVariants() {
   spinnerOff();
 }
 
+function toast(msg){
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
 function showVariants(list){
   const ul = document.getElementById("variantList");
-  ul.innerHTML = "";                                 // clear previous batch
+  ul.innerHTML = "";
 
-  list.forEach(txt => {
-    ul.insertAdjacentHTML("beforeend", `
+  list.forEach(txt=>{
+    ul.insertAdjacentHTML("beforeend",`
       <li>
         <span>${txt}</span>
-        <button class="vote" data-v="Good">👍</button>
-        <button class="vote" data-v="Bad" >👎</button>
+        <div class="voteBlock">
+          <button class="vote" data-v="Good">👍</button>
+          <button class="vote" data-v="Bad" >👎</button>
+        </div>
       </li>`);
   });
 
-  ul.querySelectorAll(".vote").forEach(btn => {
+  ul.querySelectorAll(".vote").forEach(btn=>{
     btn.onclick = async () => {
-      const variantText = btn.parentElement.firstChild.textContent;
-
+      const li          = btn.closest("li");
+      const variantText = li.querySelector("span").textContent;
       const res = await fetch(`${backendUrl}/variant-feedback/`, {
         method : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type":"application/json" },
         body   : JSON.stringify({
           original_prompt : currentSession.original_prompt,
           target_language : currentSession.lang_code,
           variant_text    : variantText,
-          rating          : btn.dataset.v          // "Good" / "Bad"
+          rating          : btn.dataset.v          // Good / Bad
         })
       });
 
-      /* visual acknowledgement */
-      btn.parentElement.querySelectorAll(".vote").forEach(b => b.remove());
-      btn.parentElement.classList.add("variantRated");      // grey‑out
-      toast(res.ok ? "Saved!" : "Save failed!");
-      if (res.ok) loadFeedbacks();                          // update table
+      /* visual + toast */
+      if(res.ok){
+        li.classList.add("variantRated");
+        li.querySelectorAll(".vote").forEach(b=>b.remove());
+        toast("Saved!");
+        loadFeedbacks();              // update table in UI
+      }else{
+        toast("Save failed!");
+      }
     };
   });
 
-  alert("Click 👍 for variants you like, 👎 otherwise.");
+  alert("Click 👍 if you like a variant, 👎 if not.\n"
+       +"Rated lines fade to show they were logged.");
 }
   
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
