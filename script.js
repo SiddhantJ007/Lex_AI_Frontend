@@ -269,10 +269,10 @@ async function requestVariants() {
 
 function showVariants(list){
   const ul = document.getElementById("variantList");
-  ul.innerHTML = "";                      // clear previous batch
+  ul.innerHTML = "";                                 // clear previous batch
 
-  list.forEach((txt,i)=>{
-    ul.insertAdjacentHTML("beforeend",`
+  list.forEach(txt => {
+    ul.insertAdjacentHTML("beforeend", `
       <li>
         <span>${txt}</span>
         <button class="vote" data-v="Good">👍</button>
@@ -280,41 +280,32 @@ function showVariants(list){
       </li>`);
   });
 
-        ul.querySelectorAll(".vote").forEach(btn => {
-        btn.onclick = async () => {
-          const variantText = btn.parentElement.firstChild.textContent;
-      
-          await fetch(`${backendUrl}/variant-feedback/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              original_prompt:  currentSession.original_prompt,
-              target_language:  currentSession.lang_code,
-              variant_text:     variantText,
-              rating:           btn.dataset.v
-            })
-          });
-      
-          /*  ▼  visual acknowledgement goes HERE  ▼  */
-          // remove both buttons and fade the whole <li>
-          btn.parentElement.querySelectorAll(".vote").forEach(b => b.remove());
-          btn.parentElement.classList.add("variantRated");   // optional CSS hook
-          toast("Saved!");                                   // little pop‑up
-        };
+  ul.querySelectorAll(".vote").forEach(btn => {
+    btn.onclick = async () => {
+      const variantText = btn.parentElement.firstChild.textContent;
+
+      const res = await fetch(`${backendUrl}/variant-feedback/`, {
+        method : "POST",
+        headers: { "Content-Type": "application/json" },
+        body   : JSON.stringify({
+          original_prompt : currentSession.original_prompt,
+          target_language : currentSession.lang_code,
+          variant_text    : variantText,
+          rating          : btn.dataset.v          // "Good" / "Bad"
+        })
       });
 
-      if(res.ok){
-        li.classList.add("variantRated");   // grey‑out
-        toast("Saved!");
-        loadFeedbacks();                    // refresh table immediately
-      }else{
-        toast("Save failed!");
-      }
+      /* visual acknowledgement */
+      btn.parentElement.querySelectorAll(".vote").forEach(b => b.remove());
+      btn.parentElement.classList.add("variantRated");      // grey‑out
+      toast(res.ok ? "Saved!" : "Save failed!");
+      if (res.ok) loadFeedbacks();                          // update table
     };
   });
 
   alert("Click 👍 for variants you like, 👎 otherwise.");
 }
+  
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
