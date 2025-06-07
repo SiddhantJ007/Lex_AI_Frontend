@@ -11,6 +11,12 @@ function getUserId () {
   return id;
 }
 
+function toast(msg){
+  const t = document.getElementById("lexToast");
+  t.textContent = msg;    t.style.display="block";
+  setTimeout(()=>{ t.style.display="none"; },2000);
+}
+
 /* simple spinner helpers – no‑op if you don't want a loader */
 function spinnerOn(msg = "Please wait…") {
   let s = document.getElementById("lexaiSpinner");
@@ -263,29 +269,44 @@ async function requestVariants() {
 
 function showVariants(list){
   const ul = document.getElementById("variantList");
-  ul.innerHTML = "";                            // clear previous batch
-  list.forEach(txt=>{
-    ul.insertAdjacentHTML("beforeend",
-      `<li>${txt}
-         <button class="vote" data-v="Good">👍</button>
-         <button class="vote" data-v="Bad">👎</button>
-       </li>`);
+  ul.innerHTML = "";                      // clear previous batch
+
+  list.forEach((txt,i)=>{
+    ul.insertAdjacentHTML("beforeend",`
+      <li>
+        <span>${txt}</span>
+        <button class="vote" data-v="Good">👍</button>
+        <button class="vote" data-v="Bad" >👎</button>
+      </li>`);
   });
+
   ul.querySelectorAll(".vote").forEach(btn=>{
     btn.onclick = async () => {
-      const variantText = btn.parentElement.firstChild.textContent;
-      await fetch(`${backendUrl}/variant-feedback/`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
+      const li   = btn.closest("li");
+      const text = li.querySelector("span").textContent;
+      // POST rating
+      const res = await fetch(`${backendUrl}/variant-feedback/`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          user_id:         getUserId(),
           original_prompt: currentSession.original_prompt,
           target_language: currentSession.lang_code,
-          variant_text:    variantText,
+          variant_text:    text,
           rating:          btn.dataset.v
         })
       });
-      btn.parentElement.style.opacity = .45;    // visual acknowledgement
+      if(res.ok){
+        li.classList.add("variantRated");   // grey‑out
+        toast("Saved!");
+        loadFeedbacks();                    // refresh table immediately
+      }else{
+        toast("Save failed!");
+      }
     };
   });
+
+  alert("Click 👍 for variants you like, 👎 otherwise.");
 }
  
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
