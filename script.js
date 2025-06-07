@@ -314,7 +314,7 @@ function showVariants(list){
   });
 
   alert("Click 👍 for variants you like, 👎 otherwise.");
- 
+}
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
