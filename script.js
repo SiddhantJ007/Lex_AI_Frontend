@@ -280,22 +280,29 @@ function showVariants(list){
       </li>`);
   });
 
-  ul.querySelectorAll(".vote").forEach(btn=>{
-    btn.onclick = async () => {
-      const li   = btn.closest("li");
-      const text = li.querySelector("span").textContent;
-      // POST rating
-      const res = await fetch(`${backendUrl}/variant-feedback/`,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          user_id:         getUserId(),
-          original_prompt: currentSession.original_prompt,
-          target_language: currentSession.lang_code,
-          variant_text:    text,
-          rating:          btn.dataset.v
-        })
+        ul.querySelectorAll(".vote").forEach(btn => {
+        btn.onclick = async () => {
+          const variantText = btn.parentElement.firstChild.textContent;
+      
+          await fetch(`${backendUrl}/variant-feedback/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              original_prompt:  currentSession.original_prompt,
+              target_language:  currentSession.lang_code,
+              variant_text:     variantText,
+              rating:           btn.dataset.v
+            })
+          });
+      
+          /*  ▼  visual acknowledgement goes HERE  ▼  */
+          // remove both buttons and fade the whole <li>
+          btn.parentElement.querySelectorAll(".vote").forEach(b => b.remove());
+          btn.parentElement.classList.add("variantRated");   // optional CSS hook
+          toast("Saved!");                                   // little pop‑up
+        };
       });
+
       if(res.ok){
         li.classList.add("variantRated");   // grey‑out
         toast("Saved!");
