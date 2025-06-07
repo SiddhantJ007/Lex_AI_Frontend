@@ -267,14 +267,19 @@ async function requestVariants() {
   spinnerOff();
 }
 
+/* ---------- toast helper (uses #lexToast) ---------- */
 function toast(msg){
+  // if a previous toast is still fading, remove it first
+  document.getElementById("lexToast")?.remove();
+
   const t = document.createElement("div");
-  t.className = "toast";
+  t.id = "lexToast";
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(()=>t.remove(), 3000);
 }
 
+/* ---------- variant list renderer (unchanged except toast & fade) ---------- */
 function showVariants(list){
   const ul = document.getElementById("variantList");
   ul.innerHTML = "";
@@ -283,7 +288,7 @@ function showVariants(list){
     ul.insertAdjacentHTML("beforeend",`
       <li>
         <span>${txt}</span>
-        <div class="voteBlock">
+        <div>
           <button class="vote" data-v="Good">👍</button>
           <button class="vote" data-v="Bad" >👎</button>
         </div>
@@ -294,31 +299,30 @@ function showVariants(list){
     btn.onclick = async () => {
       const li          = btn.closest("li");
       const variantText = li.querySelector("span").textContent;
-      const res = await fetch(`${backendUrl}/variant-feedback/`, {
-        method : "POST",
-        headers: { "Content-Type":"application/json" },
-        body   : JSON.stringify({
-          original_prompt : currentSession.original_prompt,
-          target_language : currentSession.lang_code,
-          variant_text    : variantText,
-          rating          : btn.dataset.v          // Good / Bad
+
+      const res = await fetch(`${backendUrl}/variant-feedback/`,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({
+          original_prompt: currentSession.original_prompt,
+          target_language: currentSession.lang_code,
+          variant_text:    variantText,
+          rating:          btn.dataset.v
         })
       });
 
-      /* visual + toast */
       if(res.ok){
-        li.classList.add("variantRated");
+        li.classList.add("variantRated");              // fade li
         li.querySelectorAll(".vote").forEach(b=>b.remove());
         toast("Saved!");
-        loadFeedbacks();              // update table in UI
+        loadFeedbacks();                               // refresh table
       }else{
         toast("Save failed!");
       }
     };
   });
 
-  alert("Click 👍 if you like a variant, 👎 if not.\n"
-       +"Rated lines fade to show they were logged.");
+  alert("Rate these ideas: 👍 if you like it, 👎 otherwise.");
 }
   
   document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
