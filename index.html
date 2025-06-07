@@ -129,6 +129,20 @@
           0% { transform: rotate(0deg); }
           100%{ transform: rotate(360deg); }
         }
+
+        /* --- variant list -------------------------------------------------- */
+      #variantList li      {display:flex; align-items:center; gap:8px; margin:8px 0;}
+      .vote                {width:32px; height:32px; line-height:32px;
+                            border:none; border-radius:6px; background:#2196f3;
+                            color:#fff; font-size:18px; cursor:pointer;}
+      .vote:hover          {background:#1976d2;}
+      .variantRated        {opacity:.4; pointer-events:none;}
+
+      /* --- tiny toast ---------------------------------------------------- */
+      #lexToast            {position:fixed; bottom:24px; right:24px;
+                            background:#323232; color:#fff; padding:10px 16px;
+                            border-radius:4px; font-size:14px; display:none;}
+        
     </style>
     <style>
       #feedbackTable      { width:100%; margin-top:20px; border-collapse:collapse; }
@@ -269,5 +283,6 @@
       <p>Hang on translating...</p>
     </div>
     <div id="variantDlg" style="display:none"></div>
+    <div id="lexToast"></div>
 </body>
 </html>
