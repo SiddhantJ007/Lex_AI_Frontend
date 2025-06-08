@@ -409,30 +409,26 @@ document.getElementById("badBtn").onclick = async () => {
   };
 
   /* =========== DOWNLOAD Excel ============================= */
-  document.getElementById("downloadBtn").onclick = async () =>{
-  const filter = document.getElementById("filterSelect").value;
-  const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
-  let url = `${backendUrl}/feedbacks/download?include_variants=${incAlt}`;
-  const params = [];
+ document.getElementById("downloadBtn").onclick = async () => {
+  const filterSel   = document.getElementById("filterSelect").value;      // all | Good | Bad
+  const includeAlt  = document.getElementById("variantsChk").checked;     // true | false
 
-  if (filter !== "all") params.push(`type=${filter}`);
-  if (includeVariants)  params.push("include_variants=true");
+  /* build query string with URLSearchParams (avoids double “?” etc.) */
+  const qs = new URLSearchParams();
+  if (filterSel !== "all") qs.append("type", filterSel);          // Good / Bad
+  qs.append("include_variants", includeAlt);                      // always send
 
-  if (params.length) url += "?" + params.join("&");
+  const url = `${backendUrl}/feedbacks/download?${qs.toString()}`;
 
-  // probe first
-  const r = await fetch(url, {method:"GET"});
-  if (r.ok) window.location.href = url;
-  else      alert("No feedbacks match this selection.");
-  };
-
-  document.getElementById("clearBtn").onclick = async () => {
-    if (!confirm("Delete ALL feedback rows – are you sure?")) return;
-    const r = await fetch(`${backendUrl}/feedbacks/clear`, {method:"DELETE"});
-    if (r.ok) { await loadFeedbacks(); alert("Table cleared."); }
-    else      { alert("Failed to clear – see console."); }
-  };
-
+  /* probe first so we can alert cleanly on 404 */
+  const probe = await fetch(url, { method:"GET" });
+  if (probe.ok) {
+    window.location.href = url;                                   // real download
+  } else {
+    alert("No feedbacks match this selection.");
+  }
+};
+  
   /* =========== UPLOAD PDF / IMAGE ========================= */
   document.getElementById("uploadBtn").onclick = async () => {
     const file = document.getElementById("fileInput").files[0];
