@@ -147,7 +147,7 @@ async function loadFeedbacks () {
   
   /* --- one‑time bindings ---------------------------------- */
 document.getElementById('refreshBtn' ).onclick = loadFeedbacks;
-document.getElementById('variantsChk').onchange =
+document.getElementById('variantsChk').onchange = loadFeedbacks;
 document.getElementById('filterSelect').onchange = () => {
     applyFeedbackFilter();            // just refilter; no re‐fetch needed
 };
