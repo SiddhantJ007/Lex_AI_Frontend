@@ -2,6 +2,9 @@ const backendUrl = "https://lex-ai.duckdns.org";
 
 let dt = null; 
 
+let includeVariants = false; 
+
+
 function getUserId () {
   let id = localStorage.getItem("lexai_uid");
   if (!id) {                       // first visit → create & store
@@ -89,7 +92,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadFeedbacks () {
   try {
     // always pull the freshest state from the API
-    const res = await fetch(`${backendUrl}/feedbacks/`, { cache: "no-store" });
+    const res = await fetch(
+  `${backendUrl}/feedbacks/?include_variants=${includeVariants}`,
+  { cache:"no-store" }
+);
     if (!res.ok) throw new Error(`backend ${res.status}`);
 
     const data  = await res.json();
@@ -136,6 +142,11 @@ async function loadFeedbacks () {
   }
 }
 
+  document.getElementById("showVariantsChk").onchange = async e=>{
+  includeVariants = e.target.checked;
+  await loadFeedbacks();             // refetch with new flag
+  };
+  
   /* --- one‑time bindings ---------------------------------- */
   document.getElementById('refreshBtn').onclick = loadFeedbacks;
 
@@ -388,17 +399,21 @@ document.getElementById("badBtn").onclick = async () => {
   };
 
   /* =========== DOWNLOAD Excel ============================= */
-  document.getElementById("downloadBtn").onclick = async () => {
-    const filter = document.getElementById("filterSelect").value;
-    let url = `${backendUrl}/feedbacks/download`;
-    if (filter !== "all") url += `?type=${filter}`;
-    // attempt fetch first to catch 404 and alert cleanly
-    const r = await fetch(url, { method:"GET" });
-    if (r.ok) {
-      window.location.href = url;          // trigger real download
-    } else {
-      alert("No feedbacks match this filter yet.");
-    }
+  document.getElementById("downloadBtn").onclick = async () =>{
+  const filter = document.getElementById("filterSelect").value;
+
+  let url = `${backendUrl}/feedbacks/download`;
+  const params = [];
+
+  if (filter !== "all") params.push(`type=${filter}`);
+  if (includeVariants)  params.push("include_variants=true");
+
+  if (params.length) url += "?" + params.join("&");
+
+  // probe first
+  const r = await fetch(url, {method:"GET"});
+  if (r.ok) window.location.href = url;
+  else      alert("No feedbacks match this selection.");
   };
 
   document.getElementById("clearBtn").onclick = async () => {
