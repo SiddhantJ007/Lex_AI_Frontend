@@ -14,6 +14,14 @@ function getUserId () {
   return id;
 }
 
+function applyFeedbackFilter(){
+  if(!dt) return;                     // table not ready yet
+  const wanted = document.getElementById("filterSelect").value;
+  dt.column(4)                        // Feedback column
+    .search(wanted==="all" ? "" : `^${wanted}`, true, false)
+    .draw(false);
+}
+
 /*function toast(msg){
   const t = document.getElementById("lexToast");
   t.textContent = msg;    t.style.display="block";
@@ -151,14 +159,6 @@ document.getElementById('variantsChk').onchange = loadFeedbacks;
 document.getElementById('filterSelect').onchange = () => {
     applyFeedbackFilter();            // just refilter; no re‐fetch needed
 };
-
-function applyFeedbackFilter(){
-  if(!dt) return;                     // table not ready yet
-  const wanted = document.getElementById("filterSelect").value;
-  dt.column(4)                        // Feedback column
-    .search(wanted==="all" ? "" : `^${wanted}`, true, false)
-    .draw(false);
-}
 
   /* =========== GET TRANSLATION ============================ */
   document.getElementById("translateBtn").onclick = async (e) => {
