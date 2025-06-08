@@ -91,11 +91,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   
 async function loadFeedbacks () {
   try {
+    const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
     // always pull the freshest state from the API
     const res = await fetch(
-  `${backendUrl}/feedbacks/?include_variants=${includeVariants}`,
-  { cache:"no-store" }
-);
+       `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
+      { cache:"no-store" });
     if (!res.ok) throw new Error(`backend ${res.status}`);
 
     const data  = await res.json();
@@ -141,7 +141,7 @@ async function loadFeedbacks () {
     alert("Could not load feedbacks – see console.");
   }
 }
-
+  
   document.getElementById("showVariantsChk").onchange = async e=>{
   includeVariants = e.target.checked;
   await loadFeedbacks();             // refetch with new flag
@@ -149,6 +149,7 @@ async function loadFeedbacks () {
   
   /* --- one‑time bindings ---------------------------------- */
   document.getElementById('refreshBtn').onclick = loadFeedbacks;
+  document.getElementById('variantsChk').onchange = loadFeedbacks;
 
   /* =========== GET TRANSLATION ============================ */
   document.getElementById("translateBtn").onclick = async (e) => {
@@ -401,8 +402,8 @@ document.getElementById("badBtn").onclick = async () => {
   /* =========== DOWNLOAD Excel ============================= */
   document.getElementById("downloadBtn").onclick = async () =>{
   const filter = document.getElementById("filterSelect").value;
-
-  let url = `${backendUrl}/feedbacks/download`;
+  const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
+  let url = `${backendUrl}/feedbacks/download?include_variants=${incAlt}`;
   const params = [];
 
   if (filter !== "all") params.push(`type=${filter}`);
