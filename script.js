@@ -297,29 +297,30 @@ function showVariants(list){
 
   ul.querySelectorAll(".vote").forEach(btn=>{
     btn.onclick = async () => {
-      const li          = btn.closest("li");
-      const variantText = li.querySelector("span").textContent;
+  const li          = btn.closest("li");
+  const variantText = li.querySelector("span").textContent;
 
-      const res = await fetch(`${backendUrl}/variant-feedback/`,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({
-          original_prompt: currentSession.original_prompt,
-          target_language: currentSession.lang_code,
-          variant_text:    variantText,
-          rating:          btn.dataset.v
-        })
-      });
+  const res = await fetch(`${backendUrl}/variant-feedback/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id:         getUserId(),              //  ← NEW
+      original_prompt: currentSession.original_prompt,
+      target_language: currentSession.lang_code,
+      variant_text:    variantText,
+      rating:          btn.dataset.v
+    })
+  });
 
-      if(res.ok){
-        li.style.opacity = 0.45;                // fade li
-        li.querySelectorAll(".vote").forEach(b=>b.remove());
-        toast("Saved!");
-        loadFeedbacks();                               // refresh table
-      }else{
-        toast("Save failed!");
-      }
-    };
+  if (res.ok) {
+    li.style.opacity = .45;
+    li.querySelectorAll(".vote").forEach(b => b.remove());
+    toast("Saved!");
+    loadFeedbacks();
+  } else {
+    toast("Save failed!");
+  }
+};
   });
 
   alert("Rate these ideas: 👍 if you like it, 👎 otherwise.");
