@@ -300,8 +300,6 @@ function showVariants(list){
       const li          = btn.closest("li");
       const variantText = li.querySelector("span").textContent;
 
-      let   resOK = false;
-  try{
       const res = await fetch(`${backendUrl}/variant-feedback/`,{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
@@ -321,18 +319,6 @@ function showVariants(list){
       }else{
         toast("Save failed!");
       }
-     });
-    resOK = res.ok || res.status === 201;
-  }catch(e){ /* network/CORS fail */ }
-
-  if(resOK){
-    li.classList.add("variantRated");               // grey‑out line
-    li.querySelectorAll(".vote").forEach(b=>b.remove());
-    toast("Saved!");
-    loadFeedbacks();                                // update main table
-  }else{
-    toast("Save failed – please check connectivity.");
-  }
     };
   });
 
