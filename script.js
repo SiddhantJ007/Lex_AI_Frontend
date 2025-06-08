@@ -312,7 +312,7 @@ function showVariants(list){
       });
 
       if(res.ok){
-        li.classList.add("variantRated");              // fade li
+        li.style.opacity = 0.45;                // fade li
         li.querySelectorAll(".vote").forEach(b=>b.remove());
         toast("Saved!");
         loadFeedbacks();                               // refresh table
