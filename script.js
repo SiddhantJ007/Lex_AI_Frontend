@@ -131,8 +131,11 @@ async function loadFeedbacks () {
       dt.draw(false);                 // keep current paging position
     }
 
+    /* re‑apply Good/Bad filter after (re)draw ------------ */
+    applyFeedbackFilter();
+
     /* “No rows” helper message */
-    $('#noRowsMsg').toggle(rows.length === 0);
+    $('#noRowsMsg').toggle(dt.rows({filter:'applied'}).count() === 0);
 
     console.log(`Feedbacks loaded: ${rows.length}`);
 
@@ -148,8 +151,19 @@ async function loadFeedbacks () {
   };
   
   /* --- one‑time bindings ---------------------------------- */
-  document.getElementById('refreshBtn').onclick = loadFeedbacks;
-  document.getElementById('variantsChk').onchange = loadFeedbacks;
+document.getElementById('refreshBtn' ).onclick = loadFeedbacks;
+document.getElementById('variantsChk').onchange =
+document.getElementById('filterSelect').onchange = () => {
+    applyFeedbackFilter();            // just refilter; no re‐fetch needed
+};
+
+function applyFeedbackFilter(){
+  if(!dt) return;                     // table not ready yet
+  const wanted = document.getElementById("filterSelect").value;
+  dt.column(4)                        // Feedback column
+    .search(wanted==="all" ? "" : `^${wanted}`, true, false)
+    .draw(false);
+}
 
   /* =========== GET TRANSLATION ============================ */
   document.getElementById("translateBtn").onclick = async (e) => {
