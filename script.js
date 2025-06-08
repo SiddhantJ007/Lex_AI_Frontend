@@ -145,11 +145,6 @@ async function loadFeedbacks () {
   }
 }
   
-  document.getElementById("showVariantsChk").onchange = async e=>{
-  includeVariants = e.target.checked;
-  await loadFeedbacks();             // refetch with new flag
-  };
-  
   /* --- one‑time bindings ---------------------------------- */
 document.getElementById('refreshBtn' ).onclick = loadFeedbacks;
 document.getElementById('variantsChk').onchange =
