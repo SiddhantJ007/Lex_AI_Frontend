@@ -222,7 +222,7 @@ document.getElementById('filterSelect').onchange = () => {
 async function runTranslation(prompt, target) {
   showSpin(true);
   try {
-    const res  = await fetch(${backendUrl}/full-process/, {
+    const res  = await fetch(${backendUrl}/full-process/), {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({ prompt, target_language: target })
