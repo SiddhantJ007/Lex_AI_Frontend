@@ -219,36 +219,33 @@ if (translateBtn) {                          // present only on index.html
 }
 
 /* ========= 2. results page: fetch & render =============== */
-async function runTranslation() {
-  const prompt = localStorage.getItem("lexai_prompt") || "";
-  const target = localStorage.getItem("lexai_lang")   || "EN";
-  if (!prompt) return;                    // first visit – nothing to do yet
+if (!translateBtn && storedPrompt) {          // we're on results page
+  runTranslation(storedPrompt, storedLang);
+}
 
+async function runTranslation(prompt, target) {
   showSpin(true);
   try {
-    const r   = await fetch(`${backendUrl}/full-process/`, {
+    const res  = await fetch(`${backendUrl}/full-process/`, {
       method : "POST",
-      headers: { "Content-Type":"application/json" },
+      headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({ prompt, target_language: target })
     });
-    const out = await r.json();
+    const data = await res.json();
 
-    document.getElementById("translatedText").textContent = out.translated_text;
-    document.getElementById("result").style.display         = "block";
+    document.getElementById("translatedText").textContent = data.translated_text;
+    document.getElementById("result").style.display        = "block";
     document.getElementById("feedbackControls").style.display = "block";
 
     window.currentSession = {
       original_prompt : prompt,
-      translated_text : out.translated_text,
+      translated_text : data.translated_text,
       lang_code       : target
     };
-  } catch { alert("Backend unreachable."); }
-  finally { showSpin(false); }
-}
-
-/* kick it off only when the result container exists (results page) */
-if (document.getElementById("translatedText")) {
-  await runTranslation();
+  } catch(e){
+    console.error(e);
+    alert("Translation failed – see console.");
+  } finally { showSpin(false); }
 }
   
   /* =========== GOOD / BAD buttons ========================= */
