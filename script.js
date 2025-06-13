@@ -67,7 +67,7 @@ function applyFeedbackFilter(){
 async function sendFeedback(kind){
   if(!currentSession) return alert("Translate first!");
   const payload = {
-    user_id: getUserId(), ...currentSession, feedback:kind, reason:null
+    user_id: getUserId(), ...currentSession, feedback:kind
   };
   const r = await fetch(`${backendUrl}/feedback/`,{
             method:"POST",headers:{"Content-Type":"application/json"},
@@ -148,6 +148,55 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     }
   });
 
+/* ---------------- BAD button: ask reason → regenerate ------------ */
+const badBtn = document.getElementById("badBtn");
+if (badBtn){
+  badBtn.onclick = async () => {
+    if (!window.currentSession){
+      alert("Translate first!"); return;
+    }
+
+    const reason = prompt(
+      "What’s wrong with this translation?\n" +
+      "(e.g. tone, missing keyword …)"
+    );
+    if (!reason) return;                // user cancelled
+
+    // block UI + show small spinner_1 overlay
+    showSpin(true);
+
+    try{
+      const res = await fetch(`${backendUrl}/feedback/regenerate`,{
+        method : "POST",
+        headers: { "Content-Type":"application/json" },
+        body   : JSON.stringify({
+          user_id:         getUserId(),
+          original_prompt: currentSession.original_prompt,
+          translated_text: currentSession.translated_text,
+          target_language: currentSession.lang_code,
+          reason
+        })
+      });
+      if (!res.ok) throw await res.json();
+
+      const out = await res.json();          // {new_translation, improved_prompt,…}
+
+      // ► update UI & session
+      currentSession.original_prompt = out.improved_prompt;
+      currentSession.translated_text = out.new_translation;
+      document.getElementById("translatedText").textContent = out.new_translation;
+
+      await loadFeedbacks();                 // refresh table
+      alert("Fixed! New translation shown above.");
+
+    }catch(e){
+      console.error(e);
+      alert("Regeneration failed – see console.");
+    }finally{
+      showSpin(false);
+    }
+  };
+}   
   $q("#badBtn")      ?.addEventListener("click",()=>sendFeedback("Bad"));
 
   $q("#downloadBtn") ?.addEventListener("click",async()=>{
