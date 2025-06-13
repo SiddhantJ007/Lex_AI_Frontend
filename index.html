@@ -1,0 +1,29 @@
+<!-- input.html  –  collects prompt + language (and optional file) -->
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <title>LexAI – Start</title>
+  <link rel="stylesheet" href="style.css"><!-- you can paste the <style> blocks
+                                              from index.html or keep an external file -->
+</head><body>
+
+<h1>Lex<span style="color:#3498db">AI</span></h1>
+
+<form id="firstForm">
+  <textarea id="prompt" rows="5"
+            placeholder="Enter or extract your marketing tagline …"></textarea><br>
+
+  <label>Select target language:
+    <select id="language">
+      <!-- copy the same long <option> list verbatim -->
+    </select>
+  </label><br><br>
+
+  <p>- OR upload a PDF / image to auto-extract text</p>
+  <input type="file" id="fileInput" accept=".pdf,image/*">
+  <button type="button" id="uploadBtn">Upload & Extract</button><br><br>
+
+  <button type="submit">Next → Translate</button>
+</form>
+
+<script src="input.js"></script>
+</body></html>
