@@ -64,6 +64,31 @@ async function pingBackend() {
 }
 
 /* -------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", initLexAI);
+
+async function initLexAI(){
+
+  /* (A) Are we on result.html ?  -----------------------------*/
+  if (document.getElementById("translatedText")) {
+    const prompt = sessionStorage.getItem("lex_prompt");
+    const lang   = sessionStorage.getItem("lex_lang");
+
+    if (!prompt || !lang){
+      // direct visit without data → bounce back
+      return location.href = "index.html";
+    }
+    await runTranslation(prompt, lang);   // ↓ the old helper
+  }
+
+  /* (B) Everything else below was already inside DOMContentLoaded.
+         Wrap nothing-else in a function so the old code stays intact.
+  */
+  legacyBoot();          // === move ALL your existing code into this fn ===
+}
+
+/* keep the old body of DOMContentLoaded unchanged but
+   move it into this new function so ‘initLexAI’ calls it */
+function legacyBoot(){
 document.addEventListener("DOMContentLoaded", async () => {
 
 if (document.getElementById("translatedText")) {        // we are on results
@@ -519,3 +544,4 @@ async function rateVariant(no, type){
   loadFeedbacks();
 }
 });
+}
