@@ -255,6 +255,8 @@ async function loadFeedbacks () {
     alert("Could not load feedbacks – see console.");
   }
 }
+
+window.loadFeedbacks = loadFeedbacks;
   
   /* --- one‑time bindings ---------------------------------- */
 document.getElementById('variantsChk').onchange = loadFeedbacks;
@@ -297,7 +299,8 @@ document.getElementById('filterSelect').onchange = () => {
       alert("Feedback failed! See console.");
     }
   }
-
+  window.sendFeedback = sendFeedback;  
+  
 /* ------------------ GOOD button click ------------------- */
 
 /* ---------- GOOD button workflow --------------------------------- */
@@ -353,7 +356,8 @@ async function requestVariants() {
   } catch(e){ alert("Could not fetch variants"); console.error(e); }
   spinnerOff();
 }
-
+window.requestVariants = requestVariants;
+  
 /* ---------- toast helper (uses #lexToast) ---------- */
 function toast(msg){
   // if a previous toast is still fading, remove it first
@@ -365,7 +369,8 @@ function toast(msg){
   document.body.appendChild(t);
   setTimeout(()=>t.remove(), 3000);
 }
-
+window.toast = toast;
+  
 /* ---------- variant list renderer (unchanged except toast & fade) ---------- */
 function showVariants(list){
   const ul = document.getElementById("variantList");
@@ -412,6 +417,7 @@ function showVariants(list){
 
   alert("Rate these ideas: 👍 if you like it, 👎 otherwise.");
 }
+window.showVariants = showVariants;  
   
   const badBtn1 = document.getElementById("badBtn");
 if (badBtn1)  badBtn1.onclick  = async () => { sendFeedback("Bad")};
@@ -525,12 +531,15 @@ if (downloadBtn) downloadBtn.onclick = async () => {
   // push into feedback table immediately (optional)
   loadFeedbacks();
 }
-
+window.askVariants = askVariants;
+  
 async function rateVariant(no, type){
   const vRow = [...document.querySelectorAll(".varRow")].find(r=>r.textContent.includes(no));
   const text = vRow.querySelector("span").textContent;
   await sendFeedbackVariant(no, text, type);  // tiny helper that POSTs /feedback/
   loadFeedbacks();
 }
+window.rateVariant = rateVariant;
+  
 });
 }
