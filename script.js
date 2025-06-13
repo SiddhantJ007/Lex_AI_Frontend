@@ -218,60 +218,6 @@ document.getElementById('variantsChk').onchange = loadFeedbacks;
 document.getElementById('filterSelect').onchange = () => {
     applyFeedbackFilter();            // just refilter; no re‐fetch needed
 };
-
- /* =========== GET TRANSLATION (index.html) ========================= */
-/* ========= 1. index page: Get Translation click ========== */
-const translateBtn = document.getElementById("translateBtn");
-if (translateBtn) {                          // present only on index.html
-  translateBtn.onclick = (e) => {
-    e.preventDefault();
-
-    const prompt = document.getElementById("prompt").value.trim();
-    const langEl = document.getElementById("language");
-    const target = langEl.value;
-    const selOpt = langEl.selectedOptions[0];
-
-    if (!prompt)          return alert("Enter tagline first!");
-    if (selOpt.disabled)  return alert("Language coming soon!");
-
-    /* stash the request for the next page */
-    localStorage.setItem("lexai_prompt", prompt);
-    localStorage.setItem("lexai_lang"  , target);
-
-    /* go to results.html */
-    window.location.href = "result.html";
-  };
-}
-
-/* ========= 2. results page: fetch & render =============== */
-if (!translateBtn && storedPrompt) {          // we're on results page
-  runTranslation(storedPrompt, storedLang);
-}
-
-async function runTranslation(prompt, target) {
-  showSpin(true);
-  try {
-    const res  = await fetch(`${backendUrl}/full-process/`, {
-      method : "POST",
-      headers: { "Content-Type": "application/json" },
-      body   : JSON.stringify({ prompt, target_language: target })
-    });
-    const data = await res.json();
-
-    document.getElementById("translatedText").textContent = data.translated_text;
-    document.getElementById("result").style.display        = "block";
-    document.getElementById("feedbackControls").style.display = "block";
-
-    window.currentSession = {
-      original_prompt : prompt,
-      translated_text : data.translated_text,
-      lang_code       : target
-    };
-  } catch(e){
-    console.error(e);
-    alert("Translation failed – see console.");
-  } finally { showSpin(false); }
-}
   
   /* =========== GOOD / BAD buttons ========================= */
   async function sendFeedback(type) {
