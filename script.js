@@ -5,7 +5,7 @@ const storedLang   = sessionStorage.getItem("lex_lang");
 
 if (!storedPrompt || !storedLang) {
   // direct access – send user to step-1
-  location.href = "input.html";
+  location.href = "result.html";
 } else {
   // pre-fill hidden inputs that still exist in the DOM (you removed
   // the visible <textarea>, but keep hidden ones or create them here)
