@@ -89,6 +89,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  const storedPrompt = localStorage.getItem("lexai_prompt") || "";
+  const storedLang   = localStorage.getItem("lexai_lang")   || "EN";
+  const promptEl     = document.getElementById("prompt");
+  const langEl       = document.getElementById("language");
+  if (promptEl) promptEl.value = storedPrompt;   // present only on index.html
+  if (langEl)   langEl.value   = storedLang;     // present only on index.html
+  
   /* show/hide connectivity banner */
   const offlineBanner = document.getElementById("offlineBanner");
   const backendUp     = await pingBackend();
