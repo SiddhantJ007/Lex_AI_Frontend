@@ -366,8 +366,8 @@ function showVariants(list){
   alert("Rate these ideas: 👍 if you like it, 👎 otherwise.");
 }
   
-  const badBtn = document.getElementById("badBtn");
-if (badBtn)  badBtn.onclick  = async () => { sendFeedback("Bad")};
+  const badBtn1 = document.getElementById("badBtn");
+if (badBtn1)  badBtn1.onclick  = async () => { sendFeedback("Bad")};
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
 const badBtn = document.getElementById("badBtn");
