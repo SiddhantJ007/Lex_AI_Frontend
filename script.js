@@ -13,6 +13,31 @@ function getUserId () {
   return id;
 }
 
+async function runTranslation(prompt, target) {
+  showSpin(true);
+  try {
+    const res = await fetch(`${backendUrl}/full-process/`, {   // ← back-ticks here
+      method : "POST",
+      headers: { "Content-Type": "application/json" },
+      body   : JSON.stringify({ prompt, target_language: target })
+    });
+    const data = await res.json();
+
+    document.getElementById("translatedText").textContent  = data.translated_text;
+    document.getElementById("result").style.display        = "block";
+    document.getElementById("feedbackControls").style.display = "block";
+
+    window.currentSession = {
+      original_prompt : prompt,
+      translated_text : data.translated_text,
+      lang_code       : target
+    };
+  } catch (e) {
+    console.error(e);
+    alert("Translation failed – see console.");
+  } finally { showSpin(false); }
+}
+
 function applyFeedbackFilter(){
   if(!dt) return;                     // table not ready yet
   const wanted = document.getElementById("filterSelect").value;
@@ -219,31 +244,6 @@ document.getElementById('filterSelect').onchange = () => {
     applyFeedbackFilter();            // just refilter; no re‐fetch needed
 };
 
-async function runTranslation(prompt, target) {
-  showSpin(true);
-  try {
-    const res = await fetch(`${backendUrl}/full-process/`, {   // ← back-ticks here
-      method : "POST",
-      headers: { "Content-Type": "application/json" },
-      body   : JSON.stringify({ prompt, target_language: target })
-    });
-    const data = await res.json();
-
-    document.getElementById("translatedText").textContent  = data.translated_text;
-    document.getElementById("result").style.display        = "block";
-    document.getElementById("feedbackControls").style.display = "block";
-
-    window.currentSession = {
-      original_prompt : prompt,
-      translated_text : data.translated_text,
-      lang_code       : target
-    };
-  } catch (e) {
-    console.error(e);
-    alert("Translation failed – see console.");
-  } finally { showSpin(false); }
-}
-  
   /* =========== GOOD / BAD buttons ========================= */
   async function sendFeedback(type) {
     if (!window.currentSession) {
