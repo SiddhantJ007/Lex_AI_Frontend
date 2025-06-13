@@ -66,6 +66,35 @@ async function pingBackend() {
 /* -------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", async () => {
 
+if (document.getElementById("translatedText")) {        // we are on results
+  const prompt = localStorage.getItem("lexai_prompt") || "";
+  const lang   = localStorage.getItem("lexai_lang")   || "EN";
+
+  if (prompt) {
+    showSpin(true);
+    try {
+      const r  = await fetch(`${backendUrl}/full-process/`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ prompt, target_language: lang })
+      });
+      const d  = await r.json();
+
+      document.getElementById("translatedText").textContent = d.translated_text;
+      document.getElementById("result").style.display       = "block";
+      document.getElementById("feedbackControls").style.display = "block";
+
+      /* seed currentSession for Good/Bad buttons */
+      window.currentSession = {
+        original_prompt : prompt,
+        translated_text : d.translated_text,
+        lang_code       : lang
+      };
+    } catch { alert("Backend unreachable."); }
+    finally { showSpin(false); }
+  }
+}
+  
   if (typeof $ === "undefined") {
     console.error("jQuery missing – LexAI UI can’t initialise.");
     return;
@@ -165,10 +194,10 @@ document.getElementById('filterSelect').onchange = () => {
     applyFeedbackFilter();            // just refilter; no re‐fetch needed
 };
 
-  /* =========== GET TRANSLATION ============================ */
-  const translateBtn = document.getElementById("translateBtn");
-  if (translateBtn) {
-  translateBtn.onclick = async (e) => {
+ /* =========== GET TRANSLATION (index.html) ========================= */
+const translateBtn = document.getElementById("translateBtn");
+if (translateBtn) {
+  translateBtn.onclick = (e) => {
     e.preventDefault();
 
     const prompt = document.getElementById("prompt").value.trim();
@@ -176,34 +205,16 @@ document.getElementById('filterSelect').onchange = () => {
     const target = langEl.value;
     const selOpt = langEl.selectedOptions[0];
 
-    if (!prompt) { alert("Enter tagline first!"); return; }
-    if (selOpt.disabled) { alert("Language coming soon!"); return; }
+    if (!prompt)            return alert("Enter tagline first!");
+    if (selOpt.disabled)    return alert("Language coming soon!");
 
-    showSpin(true);    
-    try {
-      const res = await fetch(`${backendUrl}/full-process/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, target_language: target })
-      });
-      const data = await res.json();
-
-      document.getElementById("translatedText").textContent = data.translated_text;
-      document.getElementById("result").style.display = "block";
-      document.getElementById("feedbackControls").style.display = "block";
-
-      window.currentSession = {
-      original_prompt : prompt,
-      translated_text : data.translated_text,
-      // store BOTH:
-      lang_code       : target,        // e.g. "FR"
-      lang_name       : selOpt.text    // e.g. "French"
-    };
-      
-    } catch { alert("Backend unreachable."); }
-    finally   { showSpin(false); }
+    /* stash input → localStorage and jump to results.html */
+    localStorage.setItem("lexai_prompt", prompt);
+    localStorage.setItem("lexai_lang",   target);
+    window.location = "results.html";
   };
-  }
+}
+  
   /* =========== GOOD / BAD buttons ========================= */
   async function sendFeedback(type) {
     if (!window.currentSession) {
@@ -243,7 +254,8 @@ document.getElementById('filterSelect').onchange = () => {
 /* ------------------ GOOD button click ------------------- */
 
 /* ---------- GOOD button workflow --------------------------------- */
-document.getElementById("goodBtn").onclick = async () => {
+const goodBtn = document.getElementById("goodBtn");
+if (goodBtn) goodBtn.onclick = async () => {
   if (!window.currentSession) {
     return alert("Translate something first!");
   }
@@ -354,10 +366,12 @@ function showVariants(list){
   alert("Rate these ideas: 👍 if you like it, 👎 otherwise.");
 }
   
-  document.getElementById("badBtn").onclick = () => sendFeedback("Bad");
+  const badBtn = document.getElementById("badBtn");
+if (badBtn)  badBtn.onclick  = async () => { sendFeedback("Bad")};
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
-document.getElementById("badBtn").onclick = async () => {
+const badBtn = document.getElementById("badBtn");
+if (badBtn)  badBtn.onclick  = async () => {
   if (!window.currentSession) { alert("Translate first!"); return; }
 
   const reason = prompt(
@@ -416,7 +430,8 @@ document.getElementById("badBtn").onclick = async () => {
   };
 
   /* =========== DOWNLOAD Excel ============================= */
- document.getElementById("downloadBtn").onclick = async () => {
+ const downloadBtn = document.getElementById("downloadBtn");
+if (downloadBtn) downloadBtn.onclick = async () => {
   const filterSel   = document.getElementById("filterSelect").value;      // all | Good | Bad
   const includeAlt  = document.getElementById("variantsChk").checked;     // true | false
 
