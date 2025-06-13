@@ -4,6 +4,11 @@ let dt = null;
 
 let includeVariants = false; 
 
+function boolFrom(id, def=false){
+  const el = document.getElementById(id);
+  return el ? !!el.checked : def;
+}
+
 function getUserId () {
   let id = localStorage.getItem("lexai_uid");
   if (!id) {                       // first visit → create & store
@@ -202,7 +207,7 @@ if (document.getElementById("translatedText")) {        // we are on results
   
 async function loadFeedbacks () {
   try {
-    const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
+    const incAlt = boolFrom("variantsChk");   
     // always pull the freshest state from the API
     const res = await fetch(
        `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
@@ -259,10 +264,8 @@ async function loadFeedbacks () {
 window.loadFeedbacks = loadFeedbacks;
   
   /* --- one‑time bindings ---------------------------------- */
-document.getElementById('variantsChk').onchange = loadFeedbacks;
-document.getElementById('filterSelect').onchange = () => {
-    applyFeedbackFilter();            // just refilter; no re‐fetch needed
-};
+document.getElementById('variantsChk')?.addEventListener("change", loadFeedbacks);
+document.getElementById('filterSelect')?.addEventListener("change", applyFeedbackFilter);
 
   /* =========== GOOD / BAD buttons ========================= */
   async function sendFeedback(type) {
@@ -305,7 +308,7 @@ document.getElementById('filterSelect').onchange = () => {
 
 /* ---------- GOOD button workflow --------------------------------- */
 const goodBtn = document.getElementById("goodBtn");
-if (goodBtn) goodBtn.onclick = async () => {
+if (goodBtn) { goodBtn.onclick = async () => {
   if (!window.currentSession) {
     return alert("Translate something first!");
   }
@@ -337,7 +340,7 @@ if (goodBtn) goodBtn.onclick = async () => {
     spinnerOff();
   }
 };
-
+}
 
 /* -------------- Variant panel ------------------------------------ */
 async function requestVariants() {
@@ -424,7 +427,7 @@ if (badBtn1)  badBtn1.onclick  = async () => { sendFeedback("Bad")};
   
   /* ---------------- Bad → ask reason → regenerate ------------- */
 const badBtn = document.getElementById("badBtn");
-if (badBtn)  badBtn.onclick  = async () => {
+if (badBtn){  badBtn.onclick  = async () => {
   if (!window.currentSession) { alert("Translate first!"); return; }
 
   const reason = prompt(
@@ -473,7 +476,7 @@ if (badBtn)  badBtn.onclick  = async () => {
             .forEach(el => el.disabled = false);
   }
 };
-
+}
   /* =========== COPY button ================================ */
   document.getElementById("copyBtn").onclick = () => {
     const txt = document.getElementById("translatedText").textContent;
