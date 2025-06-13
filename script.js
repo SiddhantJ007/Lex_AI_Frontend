@@ -1,9 +1,26 @@
 const backendUrl = "https://lex-ai.duckdns.org";
 
+const storedPrompt = sessionStorage.getItem("lex_prompt");
+const storedLang   = sessionStorage.getItem("lex_lang");
+
+if (!storedPrompt || !storedLang) {
+  // direct access – send user to step-1
+  location.href = "input.html";
+} else {
+  // pre-fill hidden inputs that still exist in the DOM (you removed
+  // the visible <textarea>, but keep hidden ones or create them here)
+  document.getElementById("prompt").value   = storedPrompt;
+  document.getElementById("language").value = storedLang;
+
+  // fire the existing translate flow automatically
+  window.addEventListener("load", () => {
+    document.getElementById("translateBtn").click();
+  });
+}
+
 let dt = null; 
 
 let includeVariants = false; 
-
 
 function getUserId () {
   let id = localStorage.getItem("lexai_uid");
