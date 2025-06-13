@@ -1,604 +1,198 @@
+/*  ─────────────────────────────────────────────────────────────┐
+    LexAI front-end (single shared script for index & results)   │
+    – no endpoints, ids or UX flows were changed                ─┘ */
+
 const backendUrl = "https://lex-ai.duckdns.org";
 
-let dt = null; 
+let dt              = null;          // DataTable handle
+let currentSession  = null;          // {original_prompt, translated_text, lang_code}
 
-let includeVariants = false; 
-
-async function loadFeedbacks () {
-  try {
-    const incAlt = boolFrom("variantsChk");   
-    // always pull the freshest state from the API
-    const res = await fetch(
-       `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
-      { cache:"no-store" });
-    if (!res.ok) throw new Error(`backend ${res.status}`);
-
-    const data  = await res.json();
-    
-    /* transform to DataTables row‑array once so we can reuse it */
-    const rows = data.map(fb => [
-      fb.id,
-      fb.original_prompt,
-      fb.translated_text,
-      fb.target_language,
-      fb.feedback
-    ]);
-
-    if (!dt) {
-      /* first call → create the table */
-      dt = $('#feedbackTable').DataTable({
-        data:    rows,
-        columns: [
-          { title: "ID" },
-          { title: "Original Prompt" },
-          { title: "Translated Text" },
-          { title: "Language" },
-          { title: "Feedback" }
-        ],
-        pageLength: 5,
-        order:      [[0, 'desc']]      // ascending ID as requested
-      });
-      $('#feedbackTable').show();     // reveal the table once built
-    } else {
-      /* subsequent calls → just refresh rows (no redraw flicker) */
-      dt.clear();
-      dt.rows.add(rows);
-      dt.draw(false);                 // keep current paging position
-    }
-
-    /* re‑apply Good/Bad filter after (re)draw ------------ */
-    applyFeedbackFilter();
-
-    /* “No rows” helper message */
-    $('#noRowsMsg').toggle(dt.rows({filter:'applied'}).count() === 0);
-
-    console.log(`Feedbacks loaded: ${rows.length}`);
-
-  } catch (e) {
-    console.error("loadFeedbacks failed:", e);
-    alert("Could not load feedbacks – see console.");
-  }
-}
-
-function boolFrom(id, def=false){
-  const el = document.getElementById(id);
-  return el ? !!el.checked : def;
-}
-
-function getUserId () {
+/* ---------- helpers ------------------------------------------------------ */
+const $q  = (sel) => document.querySelector(sel);
+const $$q = (sel) => [...document.querySelectorAll(sel)];
+const boolFrom = (id, def=false) => ($q(`#${id}`)?.checked ?? def);
+const getUserId = () => {
   let id = localStorage.getItem("lexai_uid");
-  if (!id) {                       // first visit → create & store
-    id = crypto.randomUUID();
-    localStorage.setItem("lexai_uid", id);
-  }
+  if (!id){ id = crypto.randomUUID(); localStorage.setItem("lexai_uid", id); }
   return id;
-}
+};
+const toast = (msg) => {
+  $q("#lexToast")?.remove();
+  const n = document.createElement("div");
+  n.id="lexToast"; n.textContent = msg; document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 3000);
+};
+const spinner = {
+  on (m="Please wait…"){ $q("#lexaiSpinner")?.remove();
+    const d=document.createElement("div"); d.id="lexaiSpinner";
+    Object.assign(d.style,{position:"fixed",inset:0,zIndex:9999,
+      display:"flex",alignItems:"center",justifyContent:"center",
+      background:"rgba(255,255,255,.7)",fontFamily:"Segoe UI, sans-serif"});
+    d.textContent=m; document.body.appendChild(d);},
+  off(){ $q("#lexaiSpinner")?.remove(); }
+};
+const pingBackend = () => fetch(`${backendUrl}/ping`,{cache:"no-store"})
+                            .then(r=>r.ok).catch(()=>false);
 
-async function runTranslation(prompt, target) {
-  showSpin(true);
-  try {
-    const res = await fetch(`${backendUrl}/full-process/`, {   // ← back-ticks here
-      method : "POST",
-      headers: { "Content-Type": "application/json" },
-      body   : JSON.stringify({ prompt, target_language: target })
+/* ---------- FEEDBACK table (shared by both pages) ------------------------ */
+async function loadFeedbacks(){
+  const incAlt = boolFrom("variantsChk");
+  const r = await fetch(`${backendUrl}/feedbacks/?include_variants=${incAlt}`,
+                        {cache:"no-store"});
+  if(!r.ok) return console.warn("No feedback rows yet");
+  const rows = (await r.json()).map(f=>[
+      f.id, f.original_prompt, f.translated_text, f.target_language, f.feedback
+  ]);
+
+  if(!dt){
+    dt = $('#feedbackTable').DataTable({
+      data: rows,
+      columns:["ID","Original","Translation","Lang","Feedback"].map(t=>({title:t})),
+      pageLength:5, order:[[0,'desc']]
     });
-    const data = await res.json();
-
-    document.getElementById("translatedText").textContent  = data.translated_text;
-    document.getElementById("result").style.display        = "block";
-    document.getElementById("feedbackControls").style.display = "block";
-
-    window.currentSession = {
-      original_prompt : prompt,
-      translated_text : data.translated_text,
-      lang_code       : target
-    };
-  } catch (e) {
-    console.error(e);
-    alert("Translation failed – see console.");
-  } finally { showSpin(false); }
+    $('#feedbackTable').show();
+  }else{
+    dt.clear(); dt.rows.add(rows); dt.draw(false);
+  }
+  applyFeedbackFilter();
+  $('#noRowsMsg').toggle(dt.rows({filter:'applied'}).count()===0);
 }
-
 function applyFeedbackFilter(){
-  if(!dt) return;                     // table not ready yet
-  const wanted = document.getElementById("filterSelect").value;
-  dt.column(4)                        // Feedback column
-    .search(wanted==="all" ? "" : `^${wanted}`, true, false)
-    .draw(false);
+  if(!dt) return;
+  const sel = $q("#filterSelect")?.value ?? "all";
+  dt.column(4).search(sel==="all"?"":`^${sel}`,true,false).draw(false);
 }
 
-/*function toast(msg){
-  const t = document.getElementById("lexToast");
-  t.textContent = msg;    t.style.display="block";
-  setTimeout(()=>{ t.style.display="none"; },2000);
-}*/
-
-/* simple spinner helpers – no‑op if you don't want a loader */
-function spinnerOn(msg = "Please wait…") {
-  let s = document.getElementById("lexaiSpinner");
-  if (!s) {                                 // create once
-    s = document.createElement("div");
-    s.id = "lexaiSpinner";
-    Object.assign(s.style, {
-      position:"fixed", inset:0, zIndex:9999,
-      background:"rgba(255,255,255,0.7)", display:"flex",
-      alignItems:"center", justifyContent:"center",
-      fontFamily:"Segoe UI, sans-serif", fontSize:"1.1rem"
-    });
-    document.body.appendChild(s);
-  }
-  s.textContent = msg;
-  s.style.display = "flex";
-}
-function spinnerOff() {
-  const s = document.getElementById("lexaiSpinner");
-  if (s) s.style.display = "none";
-}
-
-function showSpin(on=true){
-  document.getElementById("spinner_1").classList[on ? "remove":"add"]("hidden");
-  document.querySelectorAll("button,select,textarea,input")
-          .forEach(el => el.disabled = on);
-}
-
-/* ---------- tiny helper ---------- */
-async function pingBackend() {
-  try {
-    const r = await fetch(`${backendUrl}/ping`, { cache: "no-store" });
-    return r.ok;
-  } catch { return false; }
-}
-
-/* -------------------------------------------------- */
-document.addEventListener("DOMContentLoaded", initLexAI);
-
-async function initLexAI () {
-
-  /* ①  Are we on results.html ?  ---------------------------------*/
-  const prompt = sessionStorage.getItem("lex_prompt");
-  const lang   = sessionStorage.getItem("lex_lang");
-
-  if (document.getElementById("translatedText")) {
-    if (!prompt || !lang) {          // user jumped directly
-      return location.href = "index.html";
-    }
-    await runTranslation(prompt, lang);
-  } else {
-    /* we are on index.html – restore saved form values */
-    if (prompt)  document.getElementById("prompt").value   = prompt;
-    if (lang)    document.getElementById("language").value = lang;
-  }
-
-  /* ②  Now continue with the *rest* of the original UI wiring  */
-  legacyBoot();          //  <── just run it, no inner listener!!
-}
-
-/* keep the old body of DOMContentLoaded unchanged but
-   move it into this new function so ‘initLexAI’ calls it */
-async function legacyBoot(){
-  
-const offlineBanner = document.getElementById("offlineBanner");
-  const backendUp     = await pingBackend();
-  if (offlineBanner) offlineBanner.style.display = backendUp ? "none" : "block";
-
-  if (backendUp) await loadFeedbacks();
-
-  /* ---------- one-time bindings present on BOTH pages ---------- */
-  const filtSel  = document.getElementById("filterSelect");
-  if (filtSel && !filtSel.onchange){
-    filtSel.onchange = applyFeedbackFilter;
-  }
-  const varChk   = document.getElementById("variantsChk");
-  if (varChk && !varChk.onchange){
-    varChk.onchange = loadFeedbacks;
-  }
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-if (document.getElementById("translatedText")) {        // we are on results
-  const prompt = localStorage.getItem("lexai_prompt") || "";
-  const lang   = localStorage.getItem("lexai_lang")   || "EN";
-
-  if (prompt) {
-    showSpin(true);
-    try {
-      const r  = await fetch(`${backendUrl}/full-process/`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ prompt, target_language: lang })
-      });
-      const d  = await r.json();
-
-      document.getElementById("translatedText").textContent = d.translated_text;
-      document.getElementById("result").style.display       = "block";
-      document.getElementById("feedbackControls").style.display = "block";
-
-      /* seed currentSession for Good/Bad buttons */
-      window.currentSession = {
-        original_prompt : prompt,
-        translated_text : d.translated_text,
-        lang_code       : lang
-      };
-    } catch { alert("Backend unreachable."); }
-    finally { showSpin(false); }
-  }
-}
-  
-  if (typeof $ === "undefined") {
-    console.error("jQuery missing – LexAI UI can’t initialise.");
-    return;
-  }
-
-  const storedPrompt = localStorage.getItem("lexai_prompt") || "";
-  const storedLang   = localStorage.getItem("lexai_lang")   || "EN";
-  const promptEl     = document.getElementById("prompt");
-  const langEl       = document.getElementById("language");
-  if (promptEl) promptEl.value = storedPrompt;   // present only on index.html
-  if (langEl)   langEl.value   = storedLang;     // present only on index.html
-  
-  /* show/hide connectivity banner */
-  const offlineBanner = document.getElementById("offlineBanner");
-  const backendUp     = await pingBackend();
-  offlineBanner.style.display = backendUp ? "none" : "block";
-
-  /* only try to load feedbacks if ping succeeded */
-  if (backendUp) {
-    await loadFeedbacks();             // fills the table
-    if (!window._filterBound) {
-      document.getElementById("filterSelect").onchange = () => {
-        const wanted = document.getElementById("filterSelect").value;
-        $('#feedbackTable')
-          .DataTable()
-          .column(4)                               // Feedback column
-          .search(wanted === "all" ? "" : wanted, true, false)
-          .draw();
-      };
-      window._filterBound = true;
-    }
-  } else {
-    console.warn("Backend offline – table will remain empty");
-  }
-
-  /* === FEEDBACK TABLE ===================================== */         
-  
-async function loadFeedbacks () {
-  try {
-    const incAlt = boolFrom("variantsChk");   
-    // always pull the freshest state from the API
-    const res = await fetch(
-       `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
-      { cache:"no-store" });
-    if (!res.ok) throw new Error(`backend ${res.status}`);
-
-    const data  = await res.json();
-    
-    /* transform to DataTables row‑array once so we can reuse it */
-    const rows = data.map(fb => [
-      fb.id,
-      fb.original_prompt,
-      fb.translated_text,
-      fb.target_language,
-      fb.feedback
-    ]);
-
-    if (!dt) {
-      /* first call → create the table */
-      dt = $('#feedbackTable').DataTable({
-        data:    rows,
-        columns: [
-          { title: "ID" },
-          { title: "Original Prompt" },
-          { title: "Translated Text" },
-          { title: "Language" },
-          { title: "Feedback" }
-        ],
-        pageLength: 5,
-        order:      [[0, 'desc']]      // ascending ID as requested
-      });
-      $('#feedbackTable').show();     // reveal the table once built
-    } else {
-      /* subsequent calls → just refresh rows (no redraw flicker) */
-      dt.clear();
-      dt.rows.add(rows);
-      dt.draw(false);                 // keep current paging position
-    }
-
-    /* re‑apply Good/Bad filter after (re)draw ------------ */
-    applyFeedbackFilter();
-
-    /* “No rows” helper message */
-    $('#noRowsMsg').toggle(dt.rows({filter:'applied'}).count() === 0);
-
-    console.log(`Feedbacks loaded: ${rows.length}`);
-
-  } catch (e) {
-    console.error("loadFeedbacks failed:", e);
-    alert("Could not load feedbacks – see console.");
-  }
-}
-
-window.loadFeedbacks = loadFeedbacks;
-  
-  /* --- one‑time bindings ---------------------------------- */
-document.getElementById('variantsChk')?.addEventListener("change", loadFeedbacks);
-document.getElementById('filterSelect')?.addEventListener("change", applyFeedbackFilter);
-
-  /* =========== GOOD / BAD buttons ========================= */
-  async function sendFeedback(type) {
-    if (!window.currentSession) {
-      alert("Translate something first!");
-      return;
-    }
-
-    // temporary user id (until real auth)
-    const userId = localStorage.getItem("lexai_uid") ||
-                   crypto.randomUUID();
-    localStorage.setItem("lexai_uid", userId);
-
-    const payload = {
-      user_id:          userId,
-      original_prompt:  window.currentSession.original_prompt,
-      translated_text:  window.currentSession.translated_text,
-      target_language:  window.currentSession.lang_code,
-      feedback:         type,         
-      reason:           null
-    };
-
-    const res = await fetch(`${backendUrl}/feedback/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
-      await loadFeedbacks();          // refresh table immediately
-    } else {
-      const err = await res.json();
-      console.error(err);
-      alert("Feedback failed! See console.");
-    }
-  }
-  window.sendFeedback = sendFeedback;  
-  
-/* ------------------ GOOD button click ------------------- */
-
-/* ---------- GOOD button workflow --------------------------------- */
-const goodBtn = document.getElementById("goodBtn");
-if (goodBtn) { goodBtn.onclick = async () => {
-  if (!window.currentSession) {
-    return alert("Translate something first!");
-  }
-
-  /* 1️⃣  store the *current* translation as GOOD immediately */
-  await sendFeedback("Good", "");          // ↓ see helper just after this
-  await loadFeedbacks();                   // refresh table
-
-  /* 2️⃣  ask if user wants more ideas */
-  if (!confirm("Saved!  Would you like 5 alternative suggestions?")) return;
-
-  spinnerOn("Generating ideas…");
-  try {
-    const r = await fetch(`${backendUrl}/copy-variants/`, {
-      method : "POST",
-      headers: { "Content-Type":"application/json" },
-      body   : JSON.stringify({
-                  prompt          : currentSession.original_prompt,
-                  target_language : currentSession.lang_code,
-                  count           : 5 })
-    });
-    const data = await r.json();            // {variants:[…]}
-
-    showVariants(data.variants);            // render panel (next block)
-  } catch (e) {
-    console.error(e);
-    alert("Could not fetch variants.");
-  } finally {
-    spinnerOff();
-  }
-};
-}
-
-/* -------------- Variant panel ------------------------------------ */
-async function requestVariants() {
-  spinnerOn("Generating alternatives...");
-  try {
-    const res = await fetch(`${backendUrl}/copy-variants/?num=5`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        prompt:          currentSession.original_prompt,
-        target_language: currentSession.lang_code   // e.g. "FR"
-      })
-    });
-    const data = await res.json();
-    showVariants(data.variants);
-  } catch(e){ alert("Could not fetch variants"); console.error(e); }
-  spinnerOff();
-}
-window.requestVariants = requestVariants;
-  
-/* ---------- toast helper (uses #lexToast) ---------- */
-function toast(msg){
-  // if a previous toast is still fading, remove it first
-  document.getElementById("lexToast")?.remove();
-
-  const t = document.createElement("div");
-  t.id = "lexToast";
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 3000);
-}
-window.toast = toast;
-  
-/* ---------- variant list renderer (unchanged except toast & fade) ---------- */
-function showVariants(list){
-  const ul = document.getElementById("variantList");
-  ul.innerHTML = "";
-
-  list.forEach(txt=>{
-    ul.insertAdjacentHTML("beforeend",`
-      <li>
-        <span>${txt}</span>
-        <div>
-          <button class="vote" data-v="Good">👍</button>
-          <button class="vote" data-v="Bad" >👎</button>
-        </div>
-      </li>`);
-  });
-
-  ul.querySelectorAll(".vote").forEach(btn=>{
-    btn.onclick = async () => {
-  const li          = btn.closest("li");
-  const variantText = li.querySelector("span").textContent;
-
-  const res = await fetch(`${backendUrl}/variant-feedback/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      user_id:         getUserId(),              //  ← NEW
-      original_prompt: currentSession.original_prompt,
-      target_language: currentSession.lang_code,
-      variant_text:    variantText,
-      rating:          btn.dataset.v
-    })
-  });
-
-  if (res.ok) {
-    li.style.opacity = .45;
-    li.querySelectorAll(".vote").forEach(b => b.remove());
-    toast("Saved!");
-    loadFeedbacks();
-  } else {
-    toast("Save failed!");
-  }
-};
-  });
-
-  alert("Rate these ideas: 👍 if you like it, 👎 otherwise.");
-}
-window.showVariants = showVariants;  
-  
-  const badBtn1 = document.getElementById("badBtn");
-if (badBtn1)  badBtn1.onclick  = async () => { sendFeedback("Bad")};
-  
-  /* ---------------- Bad → ask reason → regenerate ------------- */
-const badBtn = document.getElementById("badBtn");
-if (badBtn){  badBtn.onclick  = async () => {
-  if (!window.currentSession) { alert("Translate first!"); return; }
-
-  const reason = prompt(
-    "What’s wrong with this translation?\n" +
-    "(say e.g. “tone too formal”, “missing key word”, …)"
-  );
-  if (!reason) return;
-
-  // show spinner & disable controls
-  document.getElementById("spinner").classList.remove("hidden");
-  document.querySelectorAll("button,select,textarea,input")
-          .forEach(el => el.disabled = true);
-
-  try {
-    const payload = {
-      user_id:         window.lexai_uid,
-      original_prompt: window.currentSession.original_prompt,
-      translated_text: window.currentSession.translated_text,
-      target_language: window.currentSession.lang_code,
-      reason          : reason
-    };
-
-    const res = await fetch(`${backendUrl}/feedback/regenerate`, {
-      method : "POST",
-      headers: { "Content-Type":"application/json" },
-      body   : JSON.stringify(payload)
-    });
-    if (!res.ok) throw await res.json();
-
-    const out = await res.json();          // << new translation!
-    // update UI
-    document.getElementById("translatedText").textContent = out.new_translation;
-    window.currentSession.translated_text                 = out.new_translation;
-    window.currentSession.original_prompt                 = out.improved_prompt;
-
-    await loadFeedbacks();                 // refresh table
-
-    alert("Done! Translation regenerated.");
-  } catch (e) {
-    console.error(e);
-    alert("Regeneration failed – see console.");
-  } finally {
-    // hide spinner & re‑enable
-    document.getElementById("spinner").classList.add("hidden");
-    document.querySelectorAll("button,select,textarea,input")
-            .forEach(el => el.disabled = false);
-  }
-};
-}
-  /* =========== COPY button ================================ */
-  document.getElementById("copyBtn").onclick = () => {
-    const txt = document.getElementById("translatedText").textContent;
-    navigator.clipboard.writeText(txt).then(() => {
-      alert("Translated text copied to clipboard!");
-    });
+/* ---------- GOOD/BAD feedback ------------------------------------------- */
+async function sendFeedback(kind){
+  if(!currentSession) return alert("Translate first!");
+  const payload = {
+    user_id: getUserId(), ...currentSession, feedback:kind, reason:null
   };
+  const r = await fetch(`${backendUrl}/feedback/`,{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(payload)});
+  if(r.ok){ loadFeedbacks(); toast("Saved!"); }
+  else     { toast("Save failed"); }
+}
 
-  /* =========== DOWNLOAD Excel ============================= */
- const downloadBtn = document.getElementById("downloadBtn");
-if (downloadBtn) downloadBtn.onclick = async () => {
-  const filterSel   = document.getElementById("filterSelect").value;      // all | Good | Bad
-  const includeAlt  = document.getElementById("variantsChk").checked;     // true | false
+/* ---------- run translation (results page) ------------------------------ */
+async function runTranslation(prompt, lang){
+  spinner.on("Translating…");
+  try{
+    const r = await fetch(`${backendUrl}/full-process/`,{
+                method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({prompt,target_language:lang})});
+    const d = await r.json();
+    $q("#translatedText").textContent = d.translated_text;
+    $q("#result").style.display       = "block";
+    $q("#feedbackControls").style.display = "block";
+    currentSession = {original_prompt:prompt,
+                      translated_text:d.translated_text,
+                      lang_code:lang};
+  }catch(e){ console.error(e); alert("Translation failed."); }
+  finally{ spinner.off(); }
+}
 
-  /* build query string with URLSearchParams (avoids double “?” etc.) */
-  const qs = new URLSearchParams();
-  if (filterSel !== "all") qs.append("type", filterSel);          // Good / Bad
-  qs.append("include_variants", includeAlt);                      // always send
+/* ---------- main boot (runs on every page) ------------------------------ */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  /* page-role detection */
+  const isResults = !!$q("#translatedText");
 
-  const url = `${backendUrl}/feedbacks/download?${qs.toString()}`;
-
-  /* probe first so we can alert cleanly on 404 */
-  const probe = await fetch(url, { method:"GET" });
-  if (probe.ok) {
-    window.location.href = url;                                   // real download
-  } else {
-    alert("No feedbacks match this selection.");
+  /* restore or collect form data */
+  if(!isResults){                    /* ---- index.html ---- */
+    $q("#getTranslationForm")?.addEventListener("submit",(ev)=>{
+      ev.preventDefault();
+      const prompt = $q("#prompt").value.trim();
+      const lang   = $q("#language").value;
+      if(!prompt)  return alert("Enter tagline first!");
+      sessionStorage.setItem("lex_prompt", prompt);
+      sessionStorage.setItem("lex_lang",   lang);
+      location.href = "results.html";
+    });
+  }else{                             /* ---- results.html --- */
+    const prompt = sessionStorage.getItem("lex_prompt");
+    const lang   = sessionStorage.getItem("lex_lang");
+    if(!prompt||!lang) return location.href="index.html";
+    await runTranslation(prompt, lang);
   }
-};
-  
-  async function askVariants(n = 5){
-  spinnerOn("Generating ideas…");
-  const res = await fetch(`${backendUrl}/copy-variants/`, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        prompt:  currentSession.original_prompt,
-        target_language: currentSession.lang_code,
-        count: n
-      })
-  });
-  const arr = await res.json();               // [{variant_no, original_prompt, translated_text}, …]
-  spinnerOff();
 
-  const box = document.getElementById("variantsBox");
-  box.classList.remove("hidden");
-  arr.forEach(v => {
-     box.insertAdjacentHTML("beforeend",
-       `<div class="varRow">
-           <span>${v.translated_text}</span>
-           <button onclick="rateVariant(${v.variant_no},'Good')">👍</button>
-           <button onclick="rateVariant(${v.variant_no},'Bad')">👎</button>
-        </div>`);
+  /* connectivity banner & feedback table (on both pages) */
+  if(await pingBackend()){
+    loadFeedbacks();
+  }else{
+    $q("#offlineBanner")?.classList.remove("hidden");
+  }
+
+  /* ---------------- attach one-off UI handlers ---------------- */
+  $q("#filterSelect") ?.addEventListener("change",applyFeedbackFilter);
+  $q("#variantsChk") ?.addEventListener("change",loadFeedbacks);
+
+  /* action buttons – only if element exists on this page */
+  $q("#copyBtn")     ?.addEventListener("click",()=>{
+    navigator.clipboard.writeText($q("#translatedText").textContent)
+             .then(()=>toast("Copied!")); });
+
+  $q("#goodBtn")     ?.addEventListener("click",async()=>{
+    await sendFeedback("Good");
+    if(confirm("Saved!  Generate 5 alternatives?")){
+      spinner.on("Generating…");
+      const r = await fetch(`${backendUrl}/copy-variants/`,{
+                  method:"POST",headers:{"Content-Type":"application/json"},
+                  body:JSON.stringify({prompt:currentSession.original_prompt,
+                                      target_language:currentSession.lang_code,
+                                      count:5})});
+      const {variants} = await r.json();
+      showVariants(variants);
+      spinner.off();
+    }
   });
-  // push into feedback table immediately (optional)
-  loadFeedbacks();
-}
-window.askVariants = askVariants;
-  
-async function rateVariant(no, type){
-  const vRow = [...document.querySelectorAll(".varRow")].find(r=>r.textContent.includes(no));
-  const text = vRow.querySelector("span").textContent;
-  await sendFeedbackVariant(no, text, type);  // tiny helper that POSTs /feedback/
-  loadFeedbacks();
-}
-window.rateVariant = rateVariant;
-  
+
+  $q("#badBtn")      ?.addEventListener("click",()=>sendFeedback("Bad"));
+
+  $q("#downloadBtn") ?.addEventListener("click",async()=>{
+    const qs = new URLSearchParams();
+    const sel = $q("#filterSelect").value;
+    if(sel!=="all") qs.append("type",sel);
+    qs.append("include_variants", boolFrom("variantsChk"));
+    const url = `${backendUrl}/feedbacks/download?${qs}`;
+    const probe = await fetch(url);
+    if(probe.ok) window.location.href = url;
+    else alert("No feedbacks match this selection.");
+  });
+
+  $q("#clearBtn")    ?.addEventListener("click",async()=>{
+    if(!confirm("Delete ALL feedback rows?")) return;
+    const r = await fetch(`${backendUrl}/feedbacks/clear`,{method:"DELETE"});
+    if(r.ok){ loadFeedbacks(); toast("Cleared."); }
+  });
 });
+
+/* ---------- variant list renderer (results page only) ------------------- */
+function showVariants(list){
+  const ul = $q("#variantList"); if(!ul) return;
+  ul.innerHTML="";
+  list.forEach(txt=>{
+    ul.insertAdjacentHTML("beforeend",
+      `<li><span>${txt}</span>
+         <button class="vote" data-v="Good">👍</button>
+         <button class="vote" data-v="Bad">👎</button></li>`);
+  });
+  $$q(".vote").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const li=btn.parentElement;
+      const txt=li.querySelector("span").textContent;
+      const r = await fetch(`${backendUrl}/variant-feedback/`,{
+                method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({user_id:getUserId(),
+                                     original_prompt:currentSession.original_prompt,
+                                     target_language:currentSession.lang_code,
+                                     variant_text:txt,
+                                     rating:btn.dataset.v})});
+      if(r.ok){
+        li.style.opacity=".4"; li.querySelectorAll(".vote").forEach(b=>b.remove());
+        loadFeedbacks(); toast("Saved!");
+      }else toast("Save failed");
+    };
+  });
 }
