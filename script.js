@@ -214,7 +214,7 @@ if (translateBtn) {                          // present only on index.html
     localStorage.setItem("lexai_lang"  , target);
 
     /* go to results.html */
-    window.location.href = "results.html";
+    window.location.href = "result.html";
   };
 }
 
