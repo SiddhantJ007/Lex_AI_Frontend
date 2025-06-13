@@ -160,14 +160,15 @@ async function loadFeedbacks () {
 }
   
   /* --- one‑time bindings ---------------------------------- */
-document.getElementById('refreshBtn' ).onclick = loadFeedbacks;
 document.getElementById('variantsChk').onchange = loadFeedbacks;
 document.getElementById('filterSelect').onchange = () => {
     applyFeedbackFilter();            // just refilter; no re‐fetch needed
 };
 
   /* =========== GET TRANSLATION ============================ */
-  document.getElementById("translateBtn").onclick = async (e) => {
+  const translateBtn = document.getElementById("translateBtn");
+  if (translateBtn) {
+  translateBtn.onclick = async (e) => {
     e.preventDefault();
 
     const prompt = document.getElementById("prompt").value.trim();
@@ -202,7 +203,7 @@ document.getElementById('filterSelect').onchange = () => {
     } catch { alert("Backend unreachable."); }
     finally   { showSpin(false); }
   };
-
+  }
   /* =========== GOOD / BAD buttons ========================= */
   async function sendFeedback(type) {
     if (!window.currentSession) {
