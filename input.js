@@ -23,5 +23,5 @@ document.getElementById("firstForm").onsubmit = e => {
   sessionStorage.setItem("lex_lang",   lang);
 
   /* jump to the old page */
-  location.href = "index.html";
+  location.href = "result.html";
 };
