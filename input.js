@@ -25,3 +25,21 @@ document.getElementById("uploadBtn").onclick = async () => {
       alert("Backend unreachable.");
     }
   };
+
+document.getElementById("firstForm").onsubmit = e => {
+  e.preventDefault();
+
+  const prompt = document.getElementById("prompt").value.trim();
+  const langEl = document.getElementById("language");
+  const target = langEl.value;
+
+  if (!prompt)               return alert("Please enter copy first!");
+  if (langEl.disabled)       return alert("Language coming soon!");
+
+  /* store to sessionStorage ( NOT localStorage – survives one tab only ) */
+  sessionStorage.setItem("lex_prompt", prompt);
+  sessionStorage.setItem("lex_lang",   target);
+
+  /* go to the results page */
+  location.href = "result.html";
+};
