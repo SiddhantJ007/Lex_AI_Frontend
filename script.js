@@ -91,29 +91,47 @@ async function pingBackend() {
 /* -------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", initLexAI);
 
-async function initLexAI(){
+async function initLexAI () {
 
-  /* (A) Are we on result.html ?  -----------------------------*/
+  /* ①  Are we on results.html ?  ---------------------------------*/
+  const prompt = sessionStorage.getItem("lex_prompt");
+  const lang   = sessionStorage.getItem("lex_lang");
+
   if (document.getElementById("translatedText")) {
-    const prompt = sessionStorage.getItem("lex_prompt");
-    const lang   = sessionStorage.getItem("lex_lang");
-
-    if (!prompt || !lang){
-      // direct visit without data → bounce back
+    if (!prompt || !lang) {          // user jumped directly
       return location.href = "index.html";
     }
-    await runTranslation(prompt, lang);   // ↓ the old helper
+    await runTranslation(prompt, lang);
+  } else {
+    /* we are on index.html – restore saved form values */
+    if (prompt)  document.getElementById("prompt").value   = prompt;
+    if (lang)    document.getElementById("language").value = lang;
   }
 
-  /* (B) Everything else below was already inside DOMContentLoaded.
-         Wrap nothing-else in a function so the old code stays intact.
-  */
-  legacyBoot();          // === move ALL your existing code into this fn ===
+  /* ②  Now continue with the *rest* of the original UI wiring  */
+  legacyBoot();          //  <── just run it, no inner listener!!
 }
 
 /* keep the old body of DOMContentLoaded unchanged but
    move it into this new function so ‘initLexAI’ calls it */
-function legacyBoot(){
+async function legacyBoot(){
+  
+const offlineBanner = document.getElementById("offlineBanner");
+  const backendUp     = await pingBackend();
+  if (offlineBanner) offlineBanner.style.display = backendUp ? "none" : "block";
+
+  if (backendUp) await loadFeedbacks();
+
+  /* ---------- one-time bindings present on BOTH pages ---------- */
+  const filtSel  = document.getElementById("filterSelect");
+  if (filtSel && !filtSel.onchange){
+    filtSel.onchange = applyFeedbackFilter;
+  }
+  const varChk   = document.getElementById("variantsChk");
+  if (varChk && !varChk.onchange){
+    varChk.onchange = loadFeedbacks;
+  }
+
 document.addEventListener("DOMContentLoaded", async () => {
 
 if (document.getElementById("translatedText")) {        // we are on results
