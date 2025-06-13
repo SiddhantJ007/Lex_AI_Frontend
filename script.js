@@ -222,14 +222,14 @@ document.getElementById('filterSelect').onchange = () => {
 async function runTranslation(prompt, target) {
   showSpin(true);
   try {
-    const res  = await fetch(${backendUrl}/full-process/), {
+    const res = await fetch(`${backendUrl}/full-process/`, {   // ← back-ticks here
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({ prompt, target_language: target })
     });
     const data = await res.json();
 
-    document.getElementById("translatedText").textContent = data.translated_text;
+    document.getElementById("translatedText").textContent  = data.translated_text;
     document.getElementById("result").style.display        = "block";
     document.getElementById("feedbackControls").style.display = "block";
 
@@ -238,7 +238,7 @@ async function runTranslation(prompt, target) {
       translated_text : data.translated_text,
       lang_code       : target
     };
-  } catch(e){
+  } catch (e) {
     console.error(e);
     alert("Translation failed – see console.");
   } finally { showSpin(false); }
