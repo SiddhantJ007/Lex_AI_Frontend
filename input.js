@@ -25,17 +25,3 @@ document.getElementById("uploadBtn").onclick = async () => {
       alert("Backend unreachable.");
     }
   };
-
-/* hand data to the real app */
-document.getElementById("firstForm").onsubmit = e => {
-  e.preventDefault();
-  const prompt = document.getElementById("prompt").value.trim();
-  const lang   = document.getElementById("language").value;
-  if (!prompt) return alert("Please enter copy first!");
-
-  sessionStorage.setItem("lex_prompt", prompt);
-  sessionStorage.setItem("lex_lang",   lang);
-
-  /* jump to the old page */
-  location.href = "result.html";
-};
