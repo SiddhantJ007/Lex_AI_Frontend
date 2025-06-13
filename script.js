@@ -4,6 +4,62 @@ let dt = null;
 
 let includeVariants = false; 
 
+async function loadFeedbacks () {
+  try {
+    const incAlt = boolFrom("variantsChk");   
+    // always pull the freshest state from the API
+    const res = await fetch(
+       `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
+      { cache:"no-store" });
+    if (!res.ok) throw new Error(`backend ${res.status}`);
+
+    const data  = await res.json();
+    
+    /* transform to DataTables row‑array once so we can reuse it */
+    const rows = data.map(fb => [
+      fb.id,
+      fb.original_prompt,
+      fb.translated_text,
+      fb.target_language,
+      fb.feedback
+    ]);
+
+    if (!dt) {
+      /* first call → create the table */
+      dt = $('#feedbackTable').DataTable({
+        data:    rows,
+        columns: [
+          { title: "ID" },
+          { title: "Original Prompt" },
+          { title: "Translated Text" },
+          { title: "Language" },
+          { title: "Feedback" }
+        ],
+        pageLength: 5,
+        order:      [[0, 'desc']]      // ascending ID as requested
+      });
+      $('#feedbackTable').show();     // reveal the table once built
+    } else {
+      /* subsequent calls → just refresh rows (no redraw flicker) */
+      dt.clear();
+      dt.rows.add(rows);
+      dt.draw(false);                 // keep current paging position
+    }
+
+    /* re‑apply Good/Bad filter after (re)draw ------------ */
+    applyFeedbackFilter();
+
+    /* “No rows” helper message */
+    $('#noRowsMsg').toggle(dt.rows({filter:'applied'}).count() === 0);
+
+    console.log(`Feedbacks loaded: ${rows.length}`);
+
+  } catch (e) {
+    console.error("loadFeedbacks failed:", e);
+    alert("Could not load feedbacks – see console.");
+  }
+}
+
 function boolFrom(id, def=false){
   const el = document.getElementById(id);
   return el ? !!el.checked : def;
