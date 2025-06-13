@@ -195,8 +195,9 @@ document.getElementById('filterSelect').onchange = () => {
 };
 
  /* =========== GET TRANSLATION (index.html) ========================= */
+/* ========= 1. index page: Get Translation click ========== */
 const translateBtn = document.getElementById("translateBtn");
-if (translateBtn) {
+if (translateBtn) {                          // present only on index.html
   translateBtn.onclick = (e) => {
     e.preventDefault();
 
@@ -205,14 +206,49 @@ if (translateBtn) {
     const target = langEl.value;
     const selOpt = langEl.selectedOptions[0];
 
-    if (!prompt)            return alert("Enter tagline first!");
-    if (selOpt.disabled)    return alert("Language coming soon!");
+    if (!prompt)          return alert("Enter tagline first!");
+    if (selOpt.disabled)  return alert("Language coming soon!");
 
-    /* stash input → localStorage and jump to results.html */
+    /* stash the request for the next page */
     localStorage.setItem("lexai_prompt", prompt);
-    localStorage.setItem("lexai_lang",   target);
-    window.location = "results.html";
+    localStorage.setItem("lexai_lang"  , target);
+
+    /* go to results.html */
+    window.location.href = "results.html";
   };
+}
+
+/* ========= 2. results page: fetch & render =============== */
+async function runTranslation() {
+  const prompt = localStorage.getItem("lexai_prompt") || "";
+  const target = localStorage.getItem("lexai_lang")   || "EN";
+  if (!prompt) return;                    // first visit – nothing to do yet
+
+  showSpin(true);
+  try {
+    const r   = await fetch(`${backendUrl}/full-process/`, {
+      method : "POST",
+      headers: { "Content-Type":"application/json" },
+      body   : JSON.stringify({ prompt, target_language: target })
+    });
+    const out = await r.json();
+
+    document.getElementById("translatedText").textContent = out.translated_text;
+    document.getElementById("result").style.display         = "block";
+    document.getElementById("feedbackControls").style.display = "block";
+
+    window.currentSession = {
+      original_prompt : prompt,
+      translated_text : out.translated_text,
+      lang_code       : target
+    };
+  } catch { alert("Backend unreachable."); }
+  finally { showSpin(false); }
+}
+
+/* kick it off only when the result container exists (results page) */
+if (document.getElementById("translatedText")) {
+  await runTranslation();
 }
   
   /* =========== GOOD / BAD buttons ========================= */
