@@ -106,7 +106,7 @@ async function loadFeedbacks () {
     const res = await fetch(
        `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
       { cache:"no-store" });
-    if (!res.ok) throw new Error(backend ${res.status});
+    if (!res.ok) throw new Error(`backend ${res.status}`);
 
     const data  = await res.json();
     
