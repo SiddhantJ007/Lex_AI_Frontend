@@ -1,240 +1,295 @@
-<!-- input.html  –  collects prompt + language (and optional file) -->
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-    <title>LexAI - Global Tagline Translator</title>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <link  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 10px;
-            color: #333;
-            text-align: center;
-        }
-        
-        textarea, select, input[type="file"], button {
-            margin-top: 8px;
-            padding: 8px;
-            font-size: 0.9rem;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            width: 80%;
-            box-sizing: border-box;
-        }
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexAi – Global Tagline Translator</title>
 
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 15px;
-        }
+<!-- Google Font -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-        button:hover {
-            background-color: #2980b9;
-        }
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #ecf0f1;
-            border-left: 5px solid #3498db;
-            display: none;
-        }
+<style>
+/* ========== BRAND PALETTE ========== */
+:root{
+  --brand-green:#00c2b5;
+  --brand-teal :#00bfc7;
+  --glass-bg   :rgba(255,255,255,.35);
+  --glass-blur :20px;
+  --footer-bg  :#0b0d19;
+}
+/* reset / basics */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Poppins',sans-serif;
+  color:#0b0d19;background:#f4f6f8;
+}
+main{padding-top:100px;max-width:1200px;margin:auto}
 
-        #feedbackControls {
-            display: none;
-            margin-top: 10px;
-        }
+/* ========== GLASS NAVBAR ========== */
+.glass{
+  position:fixed;top:0;left:0;width:100%;z-index:999;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 4vw;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur));
+}
+.brand{font:700 1.4rem/1 'Poppins';color:var(--brand-green);text-decoration:none}
+.nav-links{list-style:none;display:flex;gap:2.4rem}
+.nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
+.nav-item:hover{color:var(--brand-teal)}
+.btn-cta{
+  background:var(--brand-green);color:#fff;padding:.55rem 1.6rem;border-radius:25px;
+  font-weight:600;font-size:.9rem;text-decoration:none;transition:opacity .2s,transform .2s}
+.btn-cta:hover{opacity:.9;transform:translateY(-2px)}
 
-        #feedbackControls button {
-            background-color: #27ae60;
-            margin-right: 10px;
-        }
+/* ========== CARD HELPER ========== */
+.section{
+  background:#fff;padding:2rem;border-radius:12px;margin-bottom:28px;
+  box-shadow:0 4px 10px rgba(0,0,0,.05);text-align:center;
+}
+.section h2{font-size:1.45rem;font-weight:700;margin-bottom:1rem}
 
-        #feedbackControls button:last-child {
-            background-color: #e74c3c;
-        }
+/* textarea / select / inputs */
+textarea,select,input[type="file"]{
+  width:100%;max-width:770px;margin:.6rem auto;
+  padding:14px;border:2px solid #e5e7eb;border-radius:10px;
+  font-size:.95rem;background:#f9fafb;color:#333
+}
+textarea{height:130px;resize:vertical}
 
-        #feedbackControls button:hover {
-            opacity: 0.9;
-        }
+/* primary & secondary buttons */
+button, .button-like{
+  cursor:pointer;font-weight:600;font-size:.95rem;border:none;border-radius:45px;
+  padding:12px 32px;transition:transform .22s,box-shadow .22s;
+}
+.primary-btn  {background:var(--brand-green);color:#fff}
+.secondary-btn{background:#fff;color:var(--brand-green);border:2px solid var(--brand-green)}
+button:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
 
-        #feedbackTable {
-            display: none;
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
+/* good / bad buttons (keep colours) */
+#feedbackControls{display:none;margin-top:18px;gap:1rem;justify-content:center}
+#goodBtn,#badBtn{
+  flex:1;max-width:160px;color:#fff;border:none;padding:11px 0;font-weight:600;font-size:.95rem}
+#goodBtn{background:#27ae60} #badBtn{background:#e74c3c}
 
-        #feedbackTable th, #feedbackTable td {
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
+/* variants */
+#altHead{margin:34px 0 10px;font-size:1.25rem;font-weight:600}
+#variantList{list-style:none;padding:0;margin:0;max-width:900px;margin-inline:auto}
+#variantList li{display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  border-bottom:1px solid #eee;padding:10px 0}
+.vote{width:34px;height:34px;border:none;border-radius:6px;background:#2196f3;color:#ffc107;
+  font-size:18px;cursor:pointer;transition:transform .15s}
+.vote:hover{transform:scale(1.18)}
 
-        #feedbackTable th {
-            background-color: #2980b9;
-            color: white;
-        }
+/* datatable grid */
+#feedbackTable{width:100%;border-collapse:collapse;margin-top:1rem}
+#feedbackTable th,#feedbackTable td{border:1px solid #e5e7eb !important;padding:10px;text-align:left}
+.dataTables_wrapper .dataTables_paginate .paginate_button{padding:.3rem .6rem}
 
-        .hidden {
-            display: none;
-        }
+/* filters & toolbar */
+#filterBar,#feedbackToolbar{display:flex;justify-content:center;align-items:center;gap:1rem;flex-wrap:wrap}
+#filterBar select{padding:6px 10px;border:1px solid #ccc;border-radius:8px}
+#variantsChk{transform:translateY(1px)}
 
-        .section {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
+#clearBtn{background:#e74c3c;color:#fff}
+#downloadBtn{background:var(--brand-green);color:#fff}
+#clearBtn,#downloadBtn{padding:10px 22px;border-radius:40px;border:none;font-weight:600;font-size:.95rem}
 
-        #feedbackControls button:nth-child(1) { background-color: #27ae60; } /* Good */
-        #feedbackControls button:nth-child(2) { background-color: #e74c3c; } /* Bad */
-        #feedbackControls button:nth-child(3) { background-color: #1e90ff; } /* Refresh */
+/* toast */
+#lexToast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+  background:#4caf50;color:#fff;padding:10px 18px;border-radius:6px;
+  font:600 14px/1.3 'Poppins',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.25);
+  pointer-events:none;animation:fadeOut 3.2s forwards;z-index:9999}
+@keyframes fadeOut{0%,80%{opacity:1}to{opacity:0}}
 
-        #spinner {
-          position: fixed; inset: 0;               /* full‑screen overlay   */
-          backdrop-filter: blur(2px);
-          background: rgba(255,255,255,.6);
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          z-index: 9999;
-        }
+/* spinners stay as-is (IDs unchanged) */
+#spinner,#spinner_1{
+  position:fixed;inset:0;background:rgba(255,255,255,.6);backdrop-filter:blur(2px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
 
-        #spinner_1 {
-          position: fixed; inset: 0;               /* full‑screen overlay   */
-          backdrop-filter: blur(2px);
-          background: rgba(255,255,255,.6);
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          z-index: 9999;
-        }
-        
-        .hidden      { display:none !important; }
-        
-        /* CSS loader (≈ 2 KB) */
-        .lds-ring { display:inline-block; width:64px; height:64px; }
-        .lds-ring div {
-          box-sizing:border-box; display:block; position:absolute;
-          width:51px; height:51px; margin:6px; border:6px solid #3498db;
-          border-radius:50%; animation: lds 1.2s cubic-bezier(.5,0,.5,1) infinite;
-          border-color:#3498db transparent transparent transparent;
-        }
-        @keyframes lds {
-          0% { transform: rotate(0deg); }
-          100%{ transform: rotate(360deg); }
-        }
-    </style>
-    
-    <style>
-      #feedbackTable      { width:100%; margin-top:20px; border-collapse:collapse; }
-      #feedbackToolbar    { margin-top:10px; }
-    </style>
+/* ========== FOOTER ========== */
+.site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem 3rem;margin-top:60px}
+.footer-top{display:grid;gap:2.5rem;max-width:1200px;margin:auto}
+@media(min-width:700px){.footer-top{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer-brand{font-size:1.4rem;font-weight:700;color:var(--brand-green);text-decoration:none}
+.footer-col h4{font-size:1.05rem;font-weight:600;margin-bottom:1rem;color:#fff}
+.footer-col ul{list-style:none}
+.footer-col li+li{margin-top:.6rem}
+.footer-col a{color:#d1d1d1;text-decoration:none;font-size:.95rem;transition:color .2s}
+.footer-col a:hover{color:var(--brand-green)}
+hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
+.footer-bottom{max-width:1200px;margin:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.9rem}
+.social{display:flex;gap:1.5rem;list-style:none}
+.social a{color:#d1d1d1;text-decoration:none;transition:color .2s}
+.social a:hover{color:var(--brand-green)}
+</style>
+</head>
 
-    <style>
-           /* ---------- Variant list layout ---------- */
-        #variantList{
-          list-style:none; padding:0; margin:0;
-          max-width:900px;              /* optional width clamp */
-          margin-inline:auto;           /* centre block */
-        }
-        #variantList li{
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:1.2rem;                   /* space between text & buttons */
-          padding:6px 0;
-          border-bottom:1px solid #eee; /* subtle separator */
-        }
-        #variantList li.variantRated{ opacity:.45; }
-        
-        .vote{
-          width:34px; height:34px;
-          border:none; border-radius:4px;
-          background:#2196F3; color:#ffc107;
-          font-size:18px; cursor:pointer;
-          transition:transform .12s;
-        }
-        .vote:hover{ transform:scale(1.18); }
-        
-        /* ---------- Toast ---------- */
-        #lexToast{
-          position:fixed; z-index:9999;
-          left:50%; bottom:24px;  /* centre horizontally */
-          transform:translateX(-50%);
-          background:#4caf50;   /* green bar */
-          color:#fff;           /* WHITE text – was working but invisible without padding */
-          padding:10px 18px;
-          border-radius:6px;
-          font:600 14px/1.3 "Segoe UI",sans-serif;
-          box-shadow:0 4px 12px rgba(0,0,0,.25);
-          pointer-events:none;  /* click‑through */
-          animation:fadeOut 3.2s forwards;
-        }
-        @keyframes fadeOut{ 0%,80%{opacity:1} to{opacity:0} }
-    </style>
-</head><body>
+<body>
+<!-- ===== NAVBAR ===== -->
+<nav class="glass">
+  <a href="#" class="brand">LexAi</a>
+  <ul class="nav-links">
+    <li><a href="#" class="nav-item">Home</a></li>
+    <li><a href="#" class="nav-item">Features</a></li>
+    <li><a href="#" class="nav-item">Pricing</a></li>
+    <li><a href="#" class="nav-item">About</a></li>
+  </ul>
+  <a href="#" class="btn-cta">Try&nbsp;for&nbsp;Free</a>
+</nav>
 
-<h1>Lex<span style="color:#3498db">AI</span></h1>
+<main>
 
-<form id="firstForm">
-  <textarea id="prompt" rows="5"
-            placeholder="Enter or extract your marketing tagline …"></textarea><br>
+  <!-- ===== HERO + FORM ===== -->
+  <section class="section" style="margin-top:0">
+    <form id="getTranslationForm" style="margin-top:2rem">
+      <textarea id="prompt" placeholder="Enter or extract your marketing tagline here…"></textarea>
 
-  <label>Select target language:
-   <select id="language">
-                <optgroup label="Available Languages">
-                <option value="AR">Arabic</option>
-                <option value="BG">Bulgarian</option>
-                <option value="ZH">Chinese</option>
-                <option value="CS">Czech</option>
-                <option value="DA">Danish</option>
-                <option value="NL">Dutch</option>
-                <option value="EN">English</option>
-                <option value="ET">Estonian</option>
-                <option value="FI">Finnish</option>
-                <option value="FR">French</option>
-                <option value="DE">German</option>
-                <option value="EL">Greek</option>
-                <option value="HU">Hungarian</option>
-                <option value="ID">Indonesian</option>
-                <option value="IT">Italian</option>
-                <option value="JA">Japanese</option>
-                <option value="KO">Korean</option>
-                <option value="LV">Latvian</option>
-                <option value="LT">Lithuanian</option>
-                <option value="NB">Norwegian (Bokmål)</option>
-                <option value="PL">Polish</option>
-                <option value="PT">Portuguese</option>
-                <option value="RO">Romanian</option>
-                <option value="RU">Russian</option>
-                <option value="SK">Slovak</option>
-                <option value="SL">Slovenian</option>
-                <option value="ES">Spanish</option>
-                <option value="SV">Swedish</option>
-                <option value="TR">Turkish</option>
-                <option value="UK">Ukrainian</option>
-              </optgroup>
-                <optgroup label="Coming Soon!">
-                    <option value="HI" disabled>Hindi</option>
-                    <option value="JP" disabled>Japanese</option>
-                    <option value="MR" disabled>Marathi</option>
-                    <option value="KR" disabled>Korean</option>
-                    <option value="CN" disabled>Chinese</option>
-                </optgroup>
-            </select>
-  </label><br><br>
+      <label for="language" style="font-weight:600;display:block;margin-top:12px">
+        Select Target Language:
+      </label>
+      <select id="language">  <!-- unchanged options -->
+        <optgroup label="Available Languages">
+          <option value="AR">Arabic</option><option value="BG">Bulgarian</option>
+          <option value="ZH">Chinese</option><option value="CS">Czech</option>
+          <option value="DA">Danish</option><option value="NL">Dutch</option>
+          <option value="EN">English</option><option value="ET">Estonian</option>
+          <option value="FI">Finnish</option><option value="FR">French</option>
+          <option value="DE">German</option><option value="EL">Greek</option>
+          <option value="HU">Hungarian</option><option value="ID">Indonesian</option>
+          <option value="IT">Italian</option><option value="JA">Japanese</option>
+          <option value="KO">Korean</option><option value="LV">Latvian</option>
+          <option value="LT">Lithuanian</option><option value="NB">Norwegian (Bokmål)</option>
+          <option value="PL">Polish</option><option value="PT">Portuguese</option>
+          <option value="RO">Romanian</option><option value="RU">Russian</option>
+          <option value="SK">Slovak</option><option value="SL">Slovenian</option>
+          <option value="ES">Spanish</option><option value="SV">Swedish</option>
+          <option value="TR">Turkish</option><option value="UK">Ukrainian</option>
+        </optgroup>
+        <optgroup label="Coming Soon!">
+          <option value="HI" disabled>Hindi</option>
+          <option value="JP" disabled>Japanese</option>
+          <option value="MR" disabled>Marathi</option>
+          <option value="KR" disabled>Korean</option>
+          <option value="CN" disabled>Chinese</option>
+        </optgroup>
+      </select>
 
-  <p>- OR upload a PDF / image to auto-extract text</p>
-  <input type="file" id="fileInput" accept=".pdf,image/*">
-  <button type="button" id="uploadBtn">Upload & Extract</button><br><br>
+      <button type="submit" id="translateBtn" class="primary-btn">Get&nbsp;Translation</button>
+    </form>
+  </section>
 
-  <button id="translateBtn" type="submit">Get translation</button>
-</form>
+  <!-- ===== UPLOAD ===== -->
+  <section class="section">
+    <h2>Upload PDF or Image</h2>
+    <input type="file" id="fileInput" accept=".pdf,image/*">
+    <button type="button" id="uploadBtn" class="secondary-btn" style="margin-top:1rem">
+      Upload&nbsp;&amp;&nbsp;Extract&nbsp;Text
+    </button>
+  </section>
 
-<script src="input.js"></script>
-</body></html>
+  <!-- ===== RESULT ===== -->
+  <section id="result" class="section" style="display:none">
+    <h2>Translated Text</h2>
+    <p id="translatedText" style="font-weight:500"></p><br>
+    <button id="copyBtn" class="primary-btn">Copy&nbsp;to&nbsp;Clipboard</button>
+
+    <div id="feedbackControls">
+      <button id="goodBtn">Good</button>
+      <button id="badBtn">Bad</button>
+    </div>
+
+    <h3 id="altHead" style="display:none">Alternative ideas (click 👍 / 👎)</h3>
+    <ul id="variantList" class="variants"></ul>
+  </section>
+
+  <!-- ===== TABLE & TOOLBARS ===== -->
+  <section class="section">
+    <div id="filterBar">
+      <label>Show
+        <select id="filterSelect">
+          <option value="all">All</option>
+          <option value="Good">Good</option>
+          <option value="Bad">Bad</option>
+        </select>
+      </label>
+
+      <label>
+        <input type="checkbox" id="variantsChk" checked>
+        Show&nbsp;Alternatives
+      </label>
+    </div>
+
+    <table id="feedbackTable">
+      <thead>
+        <tr>
+          <th>ID</th><th>Original Prompt</th><th>Translated Text</th>
+          <th>Target Language</th><th>Feedback</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p id="noRowsMsg" style="display:none;color:#666;margin-top:1rem">
+      No feedback yet. Submit your first translation!
+    </p>
+
+    <div id="feedbackToolbar" style="margin-top:1.6rem">
+      <button id="refreshBtn" class="secondary-btn">Refresh&nbsp;Feedbacks</button>
+      <button id="downloadBtn" class="primary-btn">Download&nbsp;Excel</button>
+      <button id="clearBtn" class="primary-btn" style="background:#e74c3c">
+        Clear&nbsp;Feedbacks
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-col">
+      <a href="#" class="footer-brand">LexAi</a>
+      <p style="margin-top:1rem;max-width:280px">
+        Revolutionizing content creation with AI-powered optimization tools.
+      </p>
+    </div>
+    <div class="footer-col"><h4>Product</h4><ul><li><a href="#">Features</a></li><li><a href="#">Pricing</a></li><li><a href="#">Testimonials</a></li><li><a href="#">FAQ</a></li></ul></div>
+    <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About Us</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul></div>
+    <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li></ul></div>
+  </div>
+  <hr>
+  <div class="footer-bottom">
+    <p>© 2025 LexAi. All rights reserved.</p>
+    <ul class="social">
+      <li><a href="#">Twitter</a></li>
+      <li><a href="#">LinkedIn</a></li>
+      <li><a href="#">Facebook</a></li>
+      <li><a href="#">Instagram</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ===== LIBS & APP LOGIC ===== -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="script.js"></script>
+
+<!-- offline banner & spinners -->
+<div id="offlineBanner" style="display:none;background:#fce4e4;color:#c0392b;
+     padding:8px;position:fixed;bottom:0;width:100%;z-index:999">
+  Backend not reachable — actions will retry automatically.
+</div>
+<div id="spinner" class="hidden">
+  <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+  <p>Please wait … improving & translating</p>
+</div>
+<div id="spinner_1" class="hidden">
+  <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+  <p>Hang on translating...</p>
+</div>
+<div id="variantDlg" style="display:none"></div>
+</body>
+</html>
