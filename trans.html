@@ -112,6 +112,38 @@ button:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
   position:fixed;inset:0;background:rgba(255,255,255,.6);backdrop-filter:blur(2px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
 
+/* hero copy tweaks ----------------------------------- */
+.powered{
+  display:block;
+  font-size:.9rem;
+  font-weight:600;
+  color:#0b0d19;
+  margin-bottom:1.6rem;
+}
+
+.hero-title{
+  font-size:clamp(2rem,5vw,2.8rem);
+  font-weight:700;
+  margin-bottom:.8rem;
+  line-height:1.2;
+}
+
+.hero-tagline{
+  font-size:1.15rem;
+  font-weight:500;
+  margin-bottom:2.4rem;
+  color:#36414d;
+}
+
+.helper{
+  font-size:1.05rem;
+  font-weight:500;
+  margin:2.2rem 0 2.8rem;
+  max-width:700px;
+  margin-inline:auto;
+  color:#0b0d19;
+}
+  
 /* ========== FOOTER ========== */
 .site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem 3rem;margin-top:60px}
 .footer-top{display:grid;gap:2.5rem;max-width:1200px;margin:auto}
@@ -148,15 +180,20 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   <!-- ===== HERO + FORM ===== -->
   <section class="section" style="margin-top:0">
     <form id="getTranslationForm" style="margin-top:2rem">
-      <small>@Powered&nbsp;by&nbsp;DeepL</small>
+      <small class="powered">Powered&nbsp;by&nbsp;DeepL</small>
 
-      <h1>Input All&nbsp;Your&nbsp;Translations</h1>
-      <h3>Get new content aligned to your brand in seconds</h3>
+      <h1 class="hero-title">
+        Input&nbsp;All&nbsp;Your&nbsp;Translations
+      </h1>
+      
+      <h3 class="hero-tagline">
+        Get new content aligned to your requirements in&nbsp;seconds
+      </h3>
       
       <textarea id="prompt" placeholder="Enter or extract your marketing tagline here…"></textarea>
 
       <p class="helper">
-        Let ChatGPT analyze and the world's most accurate translator suggest lines for you
+        Let ChatGPT analyze and the world’s most accurate translator suggest lines for you
       </p>
       
       <label for="language" style="font-weight:600;display:block;margin-top:12px">
