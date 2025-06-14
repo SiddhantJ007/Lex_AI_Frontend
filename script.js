@@ -354,6 +354,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  /* =========== CLEAR FEEDBACKS ============================ */
+  document.getElementById('clearBtn').onclick = async () => {
+    if (!confirm("Delete ALL feedback rows?")) return;
+  
+    try {
+      /* backend expects DELETE /feedbacks/clear  (same base URL) */
+      const res = await fetch(`${backendUrl}/feedbacks/clear`, {
+        method: "DELETE"
+      });
+  
+      if (res.ok) {
+        await loadFeedbacks();               // refresh the table
+        alert("All feedbacks cleared.");
+      } else {
+        const err = await res.json();
+        console.error(err);
+        alert("Could not clear feedbacks.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Backend unreachable.");
+    }
+  };
+  
   /* =========== UPLOAD PDF / IMAGE ========================= */
   document.getElementById("uploadBtn").onclick = async () => {
     const file = document.getElementById("fileInput").files[0];
