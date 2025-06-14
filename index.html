@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LexAi – Optimised Content</title>
+
+<!-- Google Font -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --brand-green:#00c2b5;   /* logo, cta buttons            */
+  --brand-teal :#00bfc7;   /* nav hover                    */
+  --cta-bg    :#21a8ad;    /* big teal strip               */
+  --footer-bg :#0b0d19;    /* dark footer                  */
+  --glass-bg  :rgba(255,255,255,.35);
+  --glass-blur:20px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;color:#fff}
+
+/* -------- NAVBAR -------- */
+.glass{
+  position:fixed;top:0;left:0;width:100%;z-index:999;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.8rem 4vw;background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur));
+}
+.brand{font:700 1.4rem/1 'Poppins';color:var(--brand-green);text-decoration:none}
+.nav-links{list-style:none;display:flex;gap:2.5rem}
+.nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
+.nav-item:hover{color:var(--brand-teal)}
+.btn-cta{
+  background:var(--brand-green);color:#fff;padding:.6rem 1.8rem;border-radius:25px;
+  font-weight:600;font-size:.9rem;text-decoration:none;transition:opacity .2s,transform .2s
+}
+.btn-cta:hover{opacity:.9;transform:translateY(-2px)}
+
+/* -------- HERO -------- */
+.hero{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:url('hero.jpg') center/cover no-repeat;position:relative;text-align:center;padding:0 1rem
+}
+.hero::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.10)}
+.hero-inner{position:relative;z-index:1;max-width:900px}
+.hero h4{letter-spacing:4px;font-size:.9rem;font-weight:400;margin-bottom:1rem}
+.hero h1{font-size:clamp(2.5rem,7vw,4.5rem);font-weight:700;margin:0 0 1rem;color:#e7e7e7}
+.hero p{font-size:1.1rem;font-weight:300;margin-bottom:2.5rem}
+.primary-btn{
+  padding:1.2rem 3rem;font-size:1rem;font-weight:600;border-radius:50px;background:#fff;color:#000;
+  border:2px solid #000;cursor:pointer;transition:transform .25s,box-shadow .25s
+}
+.primary-btn:hover{transform:translateY(-4px);box-shadow:0 10px 20px rgba(0,0,0,.15)}
+
+/* -------- FEATURES -------- */
+#features{color:#000;background:#fff;padding:6rem 2rem}
+.features-wrapper{max-width:1200px;margin:auto;text-align:center}
+.features-wrapper h2{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:700;color:#0b0d19}
+.features-grid{
+  margin-top:3.5rem;display:grid;gap:2.5rem;grid-template-columns:1fr
+}
+@media(min-width:768px){.features-grid{grid-template-columns:repeat(2,1fr)}}
+.feature-card{
+  background:#fff;border:1px solid #ececec;border-radius:12px;padding:3rem 2rem;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);display:flex;flex-direction:column;align-items:center;
+  transition:transform .25s,box-shadow .25s
+}
+.feature-card:hover{transform:translateY(-6px);box-shadow:0 12px 26px rgba(0,0,0,.06)}
+.feature-card svg{width:40px;height:40px;stroke:var(--brand-green);stroke-width:2;fill:none}
+.feature-card h3{margin:1.4rem 0 .8rem;font-size:1.25rem;font-weight:700;color:#000}
+.feature-card p{font-size:.95rem;font-weight:300;line-height:1.6;color:#444;padding:0 10px}
+
+/* -------- CTA STRIP -------- */
+#cta{
+  background:var(--cta-bg);color:#fff;text-align:center;padding:5rem 1.5rem
+}
+#cta h2{font-size:clamp(2rem,5vw,2.8rem);font-weight:700;margin-bottom:1.4rem}
+#cta p{font-size:1.1rem;font-weight:300;max-width:750px;margin:0 auto 3rem}
+.cta-buttons{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.btn-primary,
+.btn-outline{
+  padding:1rem 2.5rem;border-radius:45px;font-weight:600;font-size:1rem;text-decoration:none;transition:.25s
+}
+.btn-primary{background:#fff;color:var(--cta-bg)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.btn-outline{
+  background:transparent;color:#fff;border:2px solid #fff
+}
+.btn-outline:hover{background:rgba(255,255,255,.1);transform:translateY(-3px)}
+
+/* -------- FOOTER -------- */
+.site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem}
+.footer-top{display:grid;gap:2.5rem;max-width:1200px;margin:auto}
+@media(min-width:700px){.footer-top{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer-brand{font-size:1.4rem;font-weight:700;color:var(--brand-green);text-decoration:none}
+.footer-col h4{font-size:1.05rem;font-weight:600;margin-bottom:1rem;color:#fff}
+.footer-col ul{list-style:none}
+.footer-col li+li{margin-top:.6rem}
+.footer-col a{color:#d1d1d1;text-decoration:none;font-size:.95rem;transition:color .2s}
+.footer-col a:hover{color:var(--brand-green)}
+hr{border:none;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
+.footer-bottom{max-width:1200px;margin:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.9rem}
+.social{display:flex;gap:1.5rem;list-style:none}
+.social a{color:#d1d1d1;text-decoration:none;transition:color .2s}
+.social a:hover{color:var(--brand-green)}
+
+/* generic section offset so content isn’t hidden behind fixed nav */
+section{scroll-margin-top:90px}
+</style>
+</head>
+
+<body>
+<span id="top"></span>
+
+<!-- ===== NAVBAR ===== -->
+<header>
+  <nav class="glass">
+    <a class="brand" href="#top">LexAi</a>
+    <ul class="nav-links">
+      <li><a class="nav-item" href="#home">Home</a></li>
+      <li><a class="nav-item" href="#features">Features</a></li>
+      <li><a class="nav-item" href="#pricing">Pricing</a></li>
+      <li><a class="nav-item" href="#about">About</a></li>
+    </ul>
+    <a class="btn-cta" href="#pricing">Try&nbsp;for&nbsp;Free</a>
+  </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<section id="home" class="hero">
+  <div class="hero-inner">
+    <h4>WELCOME TO</h4>
+    <h1>LexAi</h1>
+    <p>Your new era of optimized content</p>
+    <button id="start-btn" class="primary-btn">START&nbsp;HERE</button>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section id="features">
+  <div class="features-wrapper">
+    <h2>Powerful Features&nbsp;for&nbsp;Content&nbsp;Optimization</h2>
+
+    <div class="features-grid">
+      <!-- 1 -->
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16" stroke="none" fill="var(--brand-green)"/></svg>
+        <h3>AI-Powered Content&nbsp;Generation</h3>
+        <p>Our advanced AI algorithms create high-quality content that perfectly aligns with your brand voice and style.</p>
+      </div>
+      <!-- 2 -->
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        <h3>Multilingual Translation</h3>
+        <p>Translate your content into multiple languages while maintaining your unique brand voice and messaging.</p>
+      </div>
+      <!-- 3 -->
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="9" y2="9"/></svg>
+        <h3>Brand&nbsp;Voice Consistency</h3>
+        <p>Ensure all your content maintains consistent tone, style, and messaging across all platforms and languages.</p>
+      </div>
+      <!-- 4 -->
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <h3>Lightning-Fast Results</h3>
+        <p>Get optimized content in seconds, not hours or days, allowing you to move quickly and stay ahead.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA STRIP ===== -->
+<section id="cta">
+  <h2>Ready to transform your content?</h2>
+  <p>Join thousands of businesses that are saving time and improving their content quality with LexAi's AI-powered platform.</p>
+  <div class="cta-buttons">
+    <a href="javascript:void(0)" class="btn-primary">Start Free Trial</a>
+    <a href="javascript:void(0)" class="btn-outline">Request Demo</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="footer-top">
+
+    <div class="footer-col">
+      <a href="#top" class="footer-brand">LexAi</a>
+      <p style="margin-top:1rem;max-width:280px">
+        Revolutionizing content creation with AI-powered optimization tools.
+      </p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="javascript:void(0)">Features</a></li>
+        <li><a href="javascript:void(0)">Pricing</a></li>
+        <li><a href="javascript:void(0)">Testimonials</a></li>
+        <li><a href="javascript:void(0)">FAQ</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="javascript:void(0)">About Us</a></li>
+        <li><a href="javascript:void(0)">Blog</a></li>
+        <li><a href="javascript:void(0)">Careers</a></li>
+        <li><a href="javascript:void(0)">Contact</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="javascript:void(0)">Privacy Policy</a></li>
+        <li><a href="javascript:void(0)">Terms of Service</a></li>
+        <li><a href="javascript:void(0)">Cookie Policy</a></li>
+      </ul>
+    </div>
+
+  </div><!-- /footer-top -->
+
+  <hr>
+
+  <div class="footer-bottom">
+    <p>© 2025 LexAi. All rights reserved.</p>
+
+    <ul class="social">
+      <li><a href="javascript:void(0)">Twitter</a></li>
+      <li><a href="javascript:void(0)">LinkedIn</a></li>
+      <li><a href="javascript:void(0)">Facebook</a></li>
+      <li><a href="javascript:void(0)">Instagram</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="script.js" defer></script>
+</body>
+</html>
