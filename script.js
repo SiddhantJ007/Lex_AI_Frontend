@@ -61,7 +61,7 @@ function showSpin(on=true){
 /* ---------- tiny helper ---------- */
 async function pingBackend() {
   try {
-    const r = await fetch(${backendUrl}/ping, { cache: "no-store" });
+    const r = await fetch(`${backendUrl}/ping`, { cache: "no-store" });
     return r.ok;
   } catch { return false; }
 }
