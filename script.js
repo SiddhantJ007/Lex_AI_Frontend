@@ -104,7 +104,7 @@ async function loadFeedbacks () {
     const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
     // always pull the freshest state from the API
     const res = await fetch(
-       ${backendUrl}/feedbacks/?include_variants=${incAlt},
+       `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
       { cache:"no-store" });
     if (!res.ok) throw new Error(backend ${res.status});
 
@@ -176,7 +176,7 @@ document.getElementById('filterSelect').onchange = () => {
 
     showSpin(true);    
     try {
-      const res = await fetch(${backendUrl}/full-process/, {
+      const res = await fetch(`${backendUrl}/full-process/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, target_language: target })
@@ -220,7 +220,7 @@ document.getElementById('filterSelect').onchange = () => {
       reason:           null
     };
 
-    const res = await fetch(${backendUrl}/feedback/, {
+    const res = await fetch(`${backendUrl}/feedback/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -252,7 +252,7 @@ document.getElementById("goodBtn").onclick = async () => {
 
   spinnerOn("Generating ideas…");
   try {
-    const r = await fetch(${backendUrl}/copy-variants/, {
+    const r = await fetch(`${backendUrl}/copy-variants/`, {
       method : "POST",
       headers: { "Content-Type":"application/json" },
       body   : JSON.stringify({
@@ -323,7 +323,7 @@ function showVariants(list){
   const li          = btn.closest("li");
   const variantText = li.querySelector("span").textContent;
 
-  const res = await fetch(${backendUrl}/variant-feedback/, {
+  const res = await fetch(`${backendUrl}/variant-feedback/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -375,7 +375,7 @@ document.getElementById("badBtn").onclick = async () => {
       reason          : reason
     };
 
-    const res = await fetch(${backendUrl}/feedback/regenerate, {
+    const res = await fetch(`${backendUrl}/feedback/regenerate`, {
       method : "POST",
       headers: { "Content-Type":"application/json" },
       body   : JSON.stringify(payload)
@@ -420,7 +420,7 @@ document.getElementById("badBtn").onclick = async () => {
   if (filterSel !== "all") qs.append("type", filterSel);          // Good / Bad
   qs.append("include_variants", includeAlt);                      // always send
 
-  const url = ${backendUrl}/feedbacks/download?${qs.toString()};
+  const url = `${backendUrl}/feedbacks/download?${qs.toString()}`;
 
   /* probe first so we can alert cleanly on 404 */
   const probe = await fetch(url, { method:"GET" });
@@ -459,7 +459,7 @@ document.getElementById("badBtn").onclick = async () => {
 
   async function askVariants(n = 5){
   spinnerOn("Generating ideas…");
-  const res = await fetch(${backendUrl}/copy-variants/, {
+  const res = await fetch(`${backendUrl}/copy-variants/`, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
