@@ -5,45 +5,57 @@ let includeVariants = false;
 /* ---------- branded alert override ---------------------- */
 let _resolveConfirm = null;       // will hold Promise resolver
 
-function openModal(msg, showCancel) {
-  const modal   = document.getElementById("lexModal");
-  const msgBox  = document.getElementById("lexModalMsg");
-  const cancelB = document.getElementById("lexModalCancel");
+function openModal(msg, showCancel = false) {
+  const modal     = document.getElementById("lexModal");
+  const msgBox    = document.getElementById("lexModalMsg");
+  const cancelBtn = document.getElementById("lexModalCancel");
 
-  msgBox.textContent           = msg;
-  cancelB.style.display        = showCancel ? "" : "none";
+  msgBox.textContent      = msg;
+  cancelBtn.style.display = showCancel ? "" : "none";
   modal.classList.remove("hidden");
 }
 
-function closeModal(result) {
+function closeModal(answer) {
   document.getElementById("lexModal").classList.add("hidden");
-  (_resolveConfirm || (() => {}))(result);   // settle Promise if any
-  _resolveConfirm = null;
+  if (typeof closeModal._resolve === "function") {
+    closeModal._resolve(answer);
+    closeModal._resolve = null;
+  }
 }
 
-/* ---------- public wrappers ------------------------------ */
-function lexAlert(msg) {
-  openModal(msg, false);         // no Cancel button
-}
+/* ---------- alert (one-button) --------------------------- */
+window.alert = function lexAlert(msg) {
+  return new Promise(ok => {
+    openModal(msg, false);
+    closeModal._resolve = () => ok();              // OK only
+  });
+};
 
+/* ---------- confirm (OK/Cancel) returns Promise ---------- */
 function lexConfirm(msg) {
-  openModal(msg, true);          // show Cancel button
-  return new Promise(ok => { _resolveConfirm = ok; });
+  return new Promise(resolve => {
+    openModal(msg, true);
+    closeModal._resolve = resolve;                 // OK=true  Cancel=false
+  });
 }
 
-/* ---------- global overrides ----------------------------- */
-window.alert   = lexAlert;
-window.confirm = lexConfirm;
-
-/* ---------- wire buttons once DOM exists ----------------- */
+/* wire modal buttons once DOM ready ----------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  const okBtn     = document.getElementById("lexModalOk");
-  const cancelBtn = document.getElementById("lexModalCancel");
-  if (!okBtn || !cancelBtn) return;          // modal not on this page
-
-  okBtn.addEventListener("click",   () => closeModal(true));
-  cancelBtn.addEventListener("click", () => closeModal(false));
+  document.getElementById("lexModalOk")    .onclick = () => closeModal(true);
+  document.getElementById("lexModalCancel").onclick = () => closeModal(false);
 });
+
+/* ---------- toast helper (green bar) --------------------- */
+function toast(msg) {
+  const old = document.getElementById("lexToast");
+  if (old) old.remove();
+
+  const t = document.createElement("div");
+  t.id = "lexToast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
 
 /* ---------- helpers ---------- */
 function getUserId() {
@@ -199,7 +211,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       document.getElementById("translatedText").textContent = data.translated_text;
       document.getElementById("result").style.display = "block";
-      document.getElementById("result").scrollIntoView({behavior:"smooth"});
+      document.getElementById("resultHeading").scrollIntoView({behavior:"smooth"});
       document.getElementById("feedbackControls").style.display = "flex";
 
       window.currentSession = {
@@ -255,7 +267,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await sendFeedback("Good");
     await loadFeedbacks();
 
-    if (!confirm("Saved!  Would you like 5 alternative suggestions?")) return;
+    if (!await("Saved!  Would you like 5 alternative suggestions?")) return;
 
     spinnerOn("Generating ideas…");
     try {
@@ -313,8 +325,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (res.ok) {
           li.style.opacity = .45;
-          li.querySelectorAll(".vote").forEach(b => b.remove());
           toast("Saved!");
+          li.querySelectorAll(".vote").forEach(b => b.remove());
           loadFeedbacks();
         } else {
           toast("Save failed!");
@@ -400,7 +412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* =========== CLEAR FEEDBACKS ============================ */
   document.getElementById('clearBtn').onclick = async () => {
-    if (!confirm("Delete ALL feedback rows?")) return;
+    if (!await("Delete ALL feedback rows?")) return;
   
     try {
       /* backend expects DELETE /feedbacks/clear  (same base URL) */
