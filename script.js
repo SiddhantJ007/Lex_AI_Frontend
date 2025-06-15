@@ -3,46 +3,47 @@ let dt = null;
 let includeVariants = false;
 
 /* ---------- branded alert override ---------------------- */
-function lexAlert(msg){
+let _resolveConfirm = null;       // will hold Promise resolver
+
+function openModal(msg, showCancel) {
   const modal   = document.getElementById("lexModal");
   const msgBox  = document.getElementById("lexModalMsg");
-  const okBtn   = document.getElementById("lexModalOk");
-  document.getElementById("lexModalCancel").style.display="none";
-  lexConfirm(msg).then(()=>{                 // reuse same promise
-  document.getElementById("lexModalCancel").style.display="";});
-  
-  msgBox.textContent = msg;
-  modal.classList.remove("hidden");
+  const cancelB = document.getElementById("lexModalCancel");
 
-  okBtn.onclick = () => modal.classList.add("hidden");
+  msgBox.textContent           = msg;
+  cancelB.style.display        = showCancel ? "" : "none";
+  modal.classList.remove("hidden");
 }
 
-/* globally replace window.alert */
-window.alert = lexAlert;
-
-let _resolveConfirm = null;          // scope for confirm handler
-
-function lexConfirm(msg){
-  const modal  = document.getElementById("lexModal");
-  document.getElementById("lexModalMsg").textContent = msg;
-  modal.classList.remove("hidden");
-
-  return new Promise(ok=>{
-    _resolveConfirm = ok;            // store resolver for buttons
-  });
+function closeModal(result) {
+  document.getElementById("lexModal").classList.add("hidden");
+  (_resolveConfirm || (() => {}))(result);   // settle Promise if any
+  _resolveConfirm = null;
 }
-window.confirm = lexConfirm;         // override native confirm
 
-document.getElementById("lexModalOk").onclick = () => {
-  document.getElementById("lexModal").classList.add("hidden");
-  (_resolveConfirm||(()=>{}))(true);         // ✓ or continue after alert
-  _resolveConfirm = null;
-};
-document.getElementById("lexModalCancel").onclick = () => {
-  document.getElementById("lexModal").classList.add("hidden");
-  (_resolveConfirm||(()=>{}))(false);        // cancel branch
-  _resolveConfirm = null;
-};
+/* ---------- public wrappers ------------------------------ */
+function lexAlert(msg) {
+  openModal(msg, false);         // no Cancel button
+}
+
+function lexConfirm(msg) {
+  openModal(msg, true);          // show Cancel button
+  return new Promise(ok => { _resolveConfirm = ok; });
+}
+
+/* ---------- global overrides ----------------------------- */
+window.alert   = lexAlert;
+window.confirm = lexConfirm;
+
+/* ---------- wire buttons once DOM exists ----------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const okBtn     = document.getElementById("lexModalOk");
+  const cancelBtn = document.getElementById("lexModalCancel");
+  if (!okBtn || !cancelBtn) return;          // modal not on this page
+
+  okBtn.addEventListener("click",   () => closeModal(true));
+  cancelBtn.addEventListener("click", () => closeModal(false));
+});
 
 /* ---------- helpers ---------- */
 function getUserId() {
