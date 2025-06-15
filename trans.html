@@ -99,6 +99,22 @@ button:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
 #downloadBtn{background:var(--brand-green);color:#fff}
 #clearBtn,#downloadBtn{padding:10px 22px;border-radius:40px;border:none;font-weight:600;font-size:.95rem}
 
+.lex-modal{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:10000
+}
+.lex-modal-box{
+  background:#fff;border-radius:18px;padding:2rem 2.4rem;max-width:420px;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);text-align:center
+}
+.lex-modal-box h4{font-size:1.35rem;font-weight:700;margin-bottom:1.2rem;
+                  color:var(--brand-green,#00c2b5)}
+.lex-modal-box button{
+  margin-top:1.6rem;padding:.7rem 1.8rem;border:none;border-radius:40px;
+  background:var(--brand-green,#00c2b5);color:#fff;font-weight:600;font-size:.95rem;
+  cursor:pointer;transition:opacity .15s}
+.lex-modal-box button:hover{opacity:.9}
+
 /* toast */
 #lexToast{
   position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
@@ -339,5 +355,12 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   <p>Hang on translating...</p>
 </div>
 <div id="variantDlg" style="display:none"></div>
+<div id="lexModal" class="lex-modal hidden">
+  <div class="lex-modal-box">
+    <h4>LexAi says</h4>
+    <p id="lexModalMsg"></p>
+    <button id="lexModalOk">OK</button>
+  </div>
+</div>
 </body>
 </html>
