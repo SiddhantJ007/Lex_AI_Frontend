@@ -2,6 +2,21 @@ const backendUrl = "https://lex-ai.duckdns.org";
 let dt = null;
 let includeVariants = false;
 
+/* ---------- branded alert override ---------------------- */
+function lexAlert(msg){
+  const modal   = document.getElementById("lexModal");
+  const msgBox  = document.getElementById("lexModalMsg");
+  const okBtn   = document.getElementById("lexModalOk");
+
+  msgBox.textContent = msg;
+  modal.classList.remove("hidden");
+
+  okBtn.onclick = () => modal.classList.add("hidden");
+}
+
+/* globally replace window.alert */
+window.alert = lexAlert;
+
 /* ---------- helpers ---------- */
 function getUserId() {
   let id = localStorage.getItem("lexai_uid");
