@@ -175,6 +175,15 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 .social{display:flex;gap:1.5rem;list-style:none}
 .social a{color:#d1d1d1;text-decoration:none;transition:color .2s}
 .social a:hover{color:var(--brand-green)}
+  
+/* === tiny loader (used inside #spinner_1) === */
+.lds-ring{display:inline-block;width:64px;height:64px}
+.lds-ring div{
+  box-sizing:border-box;display:block;position:absolute;width:51px;height:51px;
+  margin:6px;border:6px solid var(--brand-green);border-radius:50%;
+  animation:lds 1.2s cubic-bezier(.5,0,.5,1) infinite;
+  border-color:var(--brand-green) transparent transparent transparent}
+@keyframes lds{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 </style>
 </head>
 
@@ -359,7 +368,10 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   <div class="lex-modal-box">
     <h4>LexAi says</h4>
     <p id="lexModalMsg"></p>
-    <button id="lexModalOk">OK</button>
+    <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.4rem">
+      <button id="lexModalCancel" class="secondary-btn" style="padding:.6rem 1.6rem">Cancel</button>
+      <button id="lexModalOk"     class="primary-btn"   style="padding:.6rem 2.4rem">OK</button>
+    </div>
   </div>
 </div>
 </body>
