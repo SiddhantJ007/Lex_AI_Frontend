@@ -7,7 +7,10 @@ function lexAlert(msg){
   const modal   = document.getElementById("lexModal");
   const msgBox  = document.getElementById("lexModalMsg");
   const okBtn   = document.getElementById("lexModalOk");
-
+  document.getElementById("lexModalCancel").style.display="none";
+  lexConfirm(msg).then(()=>{                 // reuse same promise
+  document.getElementById("lexModalCancel").style.display="";});
+  
   msgBox.textContent = msg;
   modal.classList.remove("hidden");
 
@@ -16,6 +19,30 @@ function lexAlert(msg){
 
 /* globally replace window.alert */
 window.alert = lexAlert;
+
+let _resolveConfirm = null;          // scope for confirm handler
+
+function lexConfirm(msg){
+  const modal  = document.getElementById("lexModal");
+  document.getElementById("lexModalMsg").textContent = msg;
+  modal.classList.remove("hidden");
+
+  return new Promise(ok=>{
+    _resolveConfirm = ok;            // store resolver for buttons
+  });
+}
+window.confirm = lexConfirm;         // override native confirm
+
+document.getElementById("lexModalOk").onclick = () => {
+  document.getElementById("lexModal").classList.add("hidden");
+  (_resolveConfirm||(()=>{}))(true);         // ✓ or continue after alert
+  _resolveConfirm = null;
+};
+document.getElementById("lexModalCancel").onclick = () => {
+  document.getElementById("lexModal").classList.add("hidden");
+  (_resolveConfirm||(()=>{}))(false);        // cancel branch
+  _resolveConfirm = null;
+};
 
 /* ---------- helpers ---------- */
 function getUserId() {
@@ -171,6 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       document.getElementById("translatedText").textContent = data.translated_text;
       document.getElementById("result").style.display = "block";
+      document.getElementById("result").scrollIntoView({behavior:"smooth"});
       document.getElementById("feedbackControls").style.display = "flex";
 
       window.currentSession = {
