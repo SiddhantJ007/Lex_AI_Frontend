@@ -2,47 +2,53 @@ const backendUrl = "https://lex-ai.duckdns.org";
 let dt = null;
 let includeVariants = false;
 
-/* ========== LexAi modal alert / confirm ========== */
-(function(){
+/* ========== BEGIN LexAi modal alert / confirm ========== */
+(function () {
 
-  let pendingResolve = null;            // holds resolver while modal is open
+  let pendingResolve = null;             // resolver for confirm promise
 
-  const modal      = document.getElementById("lexModal");
-  const msgBox     = document.getElementById("lexModalMsg");
-  const okBtn      = document.getElementById("lexModalOk");
-  const cancelBtn  = document.getElementById("lexModalCancel");
+  /* ---------- helpers ---------------------------------- */
+  function openModal(msg, showCancel) {
+    // query fresh each time (safe even if called before wiring)
+    const modal     = document.getElementById("lexModal");
+    const msgBox    = document.getElementById("lexModalMsg");
+    const cancelBtn = document.getElementById("lexModalCancel");
 
-  function openModal(msg, showCancel){
-    // reset – prevents bleed from previous alert/confirm
-    pendingResolve = null;
+    msgBox.textContent      = msg;
     cancelBtn.style.display = showCancel ? "" : "none";
-
-    msgBox.textContent = msg;
     modal.classList.remove("hidden");
   }
 
-  function closeModal(result){
-    modal.classList.add("hidden");
-    if (typeof pendingResolve === "function"){
-      pendingResolve(result);           // settle confirm Promise
+  function closeModal(answer) {
+    document.getElementById("lexModal").classList.add("hidden");
+    if (typeof pendingResolve === "function") {
+      pendingResolve(answer);            // settle confirm()
       pendingResolve = null;
     }
   }
 
-  // wire buttons once DOM ready
-  okBtn   .addEventListener("click", () => closeModal(true));
-  cancelBtn.addEventListener("click", () => closeModal(false));
-
-  /* -------------- public wrappers ---------------------- */
-  window.alert = function lexAlert(msg){
-    openModal(msg, false);
-    // no Promise needed – behave like blocking alert
+  /* ---------- public wrappers -------------------------- */
+  window.alert = function lexAlert(msg) {
+    openModal(msg, false);               // OK only
+    return new Promise(ok => {           // emulate blocking alert
+      pendingResolve = ok;
+    });
   };
 
-  window.confirm = function lexConfirm(msg){
-    openModal(msg, true);
+  window.confirm = function lexConfirm(msg) {
+    openModal(msg, true);                // OK + Cancel
     return new Promise(resolve => { pendingResolve = resolve; });
   };
+
+  /* ---------- wire buttons after DOM is ready ---------- */
+  document.addEventListener("DOMContentLoaded", () => {
+    const okBtn     = document.getElementById("lexModalOk");
+    const cancelBtn = document.getElementById("lexModalCancel");
+    if (!okBtn || !cancelBtn) return;    // modal not present on this page
+
+    okBtn    .addEventListener("click", () => closeModal(true));
+    cancelBtn.addEventListener("click", () => closeModal(false));
+  });
 
 }());
 
