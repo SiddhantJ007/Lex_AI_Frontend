@@ -159,6 +159,11 @@ button:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
   margin-inline:auto;
   color:#0b0d19;
 }
+
+.lex-modal-input{
+  width:100%;margin-top:1rem;padding:.65rem 1rem;border:2px solid #e5e7eb;
+  border-radius:10px;font-size:.95rem;outline:none
+}
   
 /* ========== FOOTER ========== */
 .site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem 3rem;margin-top:60px}
@@ -192,7 +197,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 <nav class="glass">
   <a href="index.html" class="brand">LexAi</a>
   <ul class="nav-links">
-    <li><a href="#" class="nav-item">Home</a></li>
+    <li><a href="index.html" class="nav-item">Home</a></li>
     <li><a href="#" class="nav-item">Features</a></li>
     <li><a href="#" class="nav-item">Pricing</a></li>
     <li><a href="#" class="nav-item">About</a></li>
@@ -368,6 +373,8 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   <div class="lex-modal-box">
     <h4>LexAi says</h4>
     <p id="lexModalMsg"></p>
+    <input id="lexModalInput" class="lex-modal-input hidden"
+       type="text" maxlength="250" placeholder="Type here…">
     <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.4rem">
       <button id="lexModalCancel" class="secondary-btn" style="padding:.6rem 1.6rem">Cancel</button>
       <button id="lexModalOk"     class="primary-btn"   style="padding:.6rem 2.4rem">OK</button>
