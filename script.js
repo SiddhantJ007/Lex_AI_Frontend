@@ -43,6 +43,8 @@ let includeVariants = false;
     return new Promise(ok=> { pendingResolve = ok; });
   };
 
+   window.lexConfirm = window.confirm;
+
   window.lexPrompt = function(msg){
     openModal(msg, "prompt");
     return new Promise(ok=> { pendingResolve = ok; });
