@@ -2,52 +2,64 @@ const backendUrl = "https://lex-ai.duckdns.org";
 let dt = null;
 let includeVariants = false;
 
-/* ========== BEGIN LexAi modal alert / confirm ========== */
+/* ========== BEGIN LexAi modal helpers (alert / confirm / prompt) ========== */
 (function () {
 
-  let pendingResolve = null;             // resolver for confirm promise
+  let pendingResolve = null;          // resolver for confirm/prompt
+  let promptMode     = false;         // true when expecting input
 
-  /* ---------- helpers ---------------------------------- */
-  function openModal(msg, showCancel) {
-    // query fresh each time (safe even if called before wiring)
-    const modal     = document.getElementById("lexModal");
-    const msgBox    = document.getElementById("lexModalMsg");
-    const cancelBtn = document.getElementById("lexModalCancel");
+  function openModal(msg, kind){     // kind: "alert" | "confirm" | "prompt"
+    const modal      = document.getElementById("lexModal");
+    const msgBox     = document.getElementById("lexModalMsg");
+    const inBox      = document.getElementById("lexModalInput");
+    const cancelBtn  = document.getElementById("lexModalCancel");
 
-    msgBox.textContent      = msg;
-    cancelBtn.style.display = showCancel ? "" : "none";
+    promptMode = (kind === "prompt");
+    msgBox.textContent     = msg;
+    inBox.value            = "";
+    inBox.classList.toggle("hidden", !promptMode);
+    cancelBtn.style.display = kind === "alert" ? "none" : "";
+
     modal.classList.remove("hidden");
+    if (promptMode) inBox.focus();
   }
 
-  function closeModal(answer) {
+  function closeModal(answer){
     document.getElementById("lexModal").classList.add("hidden");
-    if (typeof pendingResolve === "function") {
-      pendingResolve(answer);            // settle confirm()
+    if (typeof pendingResolve === "function"){
+      pendingResolve(answer);
       pendingResolve = null;
     }
   }
 
-  /* ---------- public wrappers -------------------------- */
-  window.alert = function lexAlert(msg) {
-    openModal(msg, false);               // OK only
-    return new Promise(ok => {           // emulate blocking alert
-      pendingResolve = ok;
-    });
+  /* ------------- public wrappers ---------------- */
+  window.alert = function(msg){
+    openModal(msg, "alert");
+    return new Promise(ok=> { pendingResolve = ok; });
   };
 
-  window.confirm = function lexConfirm(msg) {
-    openModal(msg, true);                // OK + Cancel
-    return new Promise(resolve => { pendingResolve = resolve; });
+  window.confirm = function(msg){
+    openModal(msg, "confirm");
+    return new Promise(ok=> { pendingResolve = ok; });
   };
 
-  /* ---------- wire buttons after DOM is ready ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  window.lexPrompt = function(msg){
+    openModal(msg, "prompt");
+    return new Promise(ok=> { pendingResolve = ok; });
+  };
+
+  /* wire buttons once DOM ready */
+  document.addEventListener("DOMContentLoaded", ()=>{
     const okBtn     = document.getElementById("lexModalOk");
     const cancelBtn = document.getElementById("lexModalCancel");
-    if (!okBtn || !cancelBtn) return;    // modal not present on this page
+    const inBox     = document.getElementById("lexModalInput");
+    if(!okBtn || !cancelBtn) return;
 
-    okBtn    .addEventListener("click", () => closeModal(true));
-    cancelBtn.addEventListener("click", () => closeModal(false));
+    okBtn.addEventListener("click",()=>{
+      const val = promptMode ? inBox.value.trim() : true;
+      closeModal(val);
+    });
+    cancelBtn.addEventListener("click",()=>closeModal(false));
   });
 
 }());
@@ -274,7 +286,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await sendFeedback("Good");
     await loadFeedbacks();
 
-    if (!await("Saved!  Would you like 5 alternative suggestions?")) return;
+    if (!await lexConfirm("Saved!  Would you like 5 alternative suggestions?")) return;
 
     spinnerOn("Generating ideas…");
     try {
@@ -350,8 +362,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("badBtn").onclick = async () => {
     if (!window.currentSession) return alert("Translate first!");
 
-    const reason = prompt("What’s wrong with this translation?");
-    if (!reason) return;
+   const reason = await lexPrompt("What’s wrong with this translation?");
+   if (!reason) return;               
 
     document.getElementById("spinner").classList.remove("hidden");
     document.querySelectorAll("button,select,textarea,input")
@@ -419,7 +431,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* =========== CLEAR FEEDBACKS ============================ */
   document.getElementById('clearBtn').onclick = async () => {
-    if (!await("Delete ALL feedback rows?")) return;
+    if (!await lexConfirm("Delete ALL feedback rows?")) return;
   
     try {
       /* backend expects DELETE /feedbacks/clear  (same base URL) */
