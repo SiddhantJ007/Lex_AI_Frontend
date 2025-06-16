@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About | LexAi</title>
+
+<!-- Google Font -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<!-- shared palette / utilities – identical to trans.html -->
+<style>
+:root{
+  --brand-green:#00c2b5;
+  --brand-teal :#00bfc7;
+  --glass-bg   :rgba(255,255,255,.35);
+  --glass-blur :20px;
+  --footer-bg  :#0b0d19;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;color:#0b0d19;background:#f4f6f8}
+main{padding-top:100px;max-width:1120px;margin:auto}
+.hidden{display:none!important}
+
+.glass{
+  position:fixed;top:0;left:0;width:100%;z-index:999;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 4vw;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur))
+}
+.brand{font:700 1.4rem/1 'Poppins';color:var(--brand-green);text-decoration:none}
+.nav-links{list-style:none;display:flex;gap:2.4rem}
+.nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
+.nav-item:hover{color:var(--brand-teal)}
+.btn-cta{
+  background:var(--brand-green);color:#fff;padding:.55rem 1.6rem;border-radius:25px;
+  font-weight:600;font-size:.9rem;text-decoration:none;transition:opacity .2s,transform .2s}
+.btn-cta:hover{opacity:.9;transform:translateY(-2px)}
+
+.section{
+  background:#fff;padding:2.6rem 2.2rem;border-radius:14px;margin-bottom:32px;
+  box-shadow:0 4px 12px rgba(0,0,0,.06)
+}
+.section h1{font-size:1.9rem;font-weight:700;margin-bottom:1.2rem}
+.section h2{font-size:1.25rem;font-weight:600;margin:1.8rem 0 .8rem}
+.section p{font-size:1.04rem;line-height:1.55;margin-bottom:1.2rem}
+
+.founder-box{
+  display:flex;flex-direction:column;align-items:center;gap:1.8rem;margin-top:2.4rem
+}
+.founder-box img{
+  width:190px;height:190px;border-radius:50%;object-fit:cover;box-shadow:0 4px 10px rgba(0,0,0,.15)
+}
+.founder-box h3{font-size:1.35rem;font-weight:700;margin-bottom:.3rem}
+.founder-box span{font-size:.9rem;color:#555}
+
+@media(min-width:750px){
+  .founder-box{flex-direction:row;align-items:flex-start}
+  .founder-bio{flex:1}
+}
+
+/* footer (same as trans.html) */
+.site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem 3rem;margin-top:60px}
+.footer-top{display:grid;gap:2.5rem;max-width:1200px;margin:auto}
+@media(min-width:700px){.footer-top{grid-template-columns:2fr 1fr 1fr 1fr}}
+.footer-brand{font-size:1.4rem;font-weight:700;color:var(--brand-green);text-decoration:none}
+.footer-col h4{font-size:1.05rem;font-weight:600;margin-bottom:1rem;color:#fff}
+.footer-col ul{list-style:none}
+.footer-col li+li{margin-top:.6rem}
+.footer-col a{color:#d1d1d1;text-decoration:none;font-size:.95rem;transition:color .2s}
+.footer-col a:hover{color:var(--brand-green)}
+hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
+.footer-bottom{max-width:1200px;margin:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.9rem}
+.social{display:flex;gap:1.5rem;list-style:none}
+.social a{color:#d1d1d1;text-decoration:none;transition:color .2s}
+.social a:hover{color:var(--brand-green)}
+</style>
+</head>
+
+<body>
+<!-- ========= NAVBAR ========= -->
+<nav class="glass">
+  <a href="index.html" class="brand">LexAi</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="nav-item">Home</a></li>
+    <li><a href="#feat" class="nav-item">Features</a></li>
+    <li><a href="#price" class="nav-item">Pricing</a></li>
+    <li><a href="about.html" class="nav-item">About</a></li>
+  </ul>
+  <a href="#" class="btn-cta">Try&nbsp;for&nbsp;Free</a>
+</nav>
+
+<main>
+
+  <!-- ========== WHY LexAi? ========== -->
+  <section class="section">
+    <h1>Why&nbsp;LexAi?</h1>
+
+    <p>
+      After years of direct-response copywriting and translating high-stakes campaigns
+      as a bilingual copywriter at Amazon, I realised something was deeply broken in
+      global marketing: <strong>translation and performance lived in separate universes</strong>.
+      Millions were poured into high-quality creative and localisation, yet content
+      often fell flat once it reached international audiences.  
+      The issue wasn’t the language – it was the absence of data-driven optimisation.
+    </p>
+
+    <p>
+      <strong>LexAI</strong> is the first AI-powered platform that turns translation
+      from a cost-centre into a performance engine. By analysing historical campaign
+      data, generating context-aware prompts and integrating seamlessly via API,
+      LexAI lets you A/B test, iterate and scale high-impact copy in every market.  
+      In a world where attention is currency, LexAI helps you speak the language
+      of results.
+    </p>
+
+    <!-- ===== Founder card ===== -->
+    <div class="founder-box">
+      <img src="Julein.jpeg" alt="Portrait of Julien, founder of LexAi">
+      <div class="founder-bio">
+        <h2>Founder</h2>
+        <h3>Julien&nbsp;— Copywriter&nbsp;→ Prompt&nbsp;Engineer</h3>
+        <p>
+          Julien is a New York-based copywriter turned prompt-engineer with deep
+          expertise in translation, marketing and creative strategy. He aligns
+          language with business objectives to drive measurable value, delivering
+          data-driven solutions and leading high-impact initiatives for Fortune 100
+          clients.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ========= FOOTER ========= -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-col">
+      <a href="index.html" class="footer-brand">LexAi</a>
+      <p style="margin-top:1rem;max-width:280px">
+        Revolutionising content creation with AI-powered optimisation tools.
+      </p>
+    </div>
+    <div class="footer-col"><h4>Product</h4><ul><li><a href="#">Features</a></li><li><a href="#">Pricing</a></li><li><a href="#">Testimonials</a></li><li><a href="#">FAQ</a></li></ul></div>
+    <div class="footer-col"><h4>Company</h4><ul><li><a href="about.html">About Us</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul></div>
+    <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li></ul></div>
+  </div>
+  <hr>
+  <div class="footer-bottom">
+    <p>© 2025 LexAi. All rights reserved.</p>
+    <ul class="social">
+      <li><a href="#">Twitter</a></li>
+      <li><a href="#">LinkedIn</a></li>
+      <li><a href="#">Facebook</a></li>
+      <li><a href="#">Instagram</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
