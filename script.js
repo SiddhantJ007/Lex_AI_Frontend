@@ -223,7 +223,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
   if (mode === "rephrase") {
     showSpin(true);
     try {
-      const r = await authFetch(`${backendUrl}/rephrase/`, {
+      const r = await fetch(`${backendUrl}/rephrase/`, {
         method : "POST",
         headers: { "Content-Type": "application/json" },
         body   : JSON.stringify({ prompt })
@@ -250,7 +250,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
   showSpin(true);
   try {
-    const res = await authFetch(`${backendUrl}/full-process/`, {
+    const res = await fetch(`${backendUrl}/full-process/`, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({ prompt, target_language: target })
