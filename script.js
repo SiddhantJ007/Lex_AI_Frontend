@@ -210,44 +210,72 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById('filterSelect').onchange = applyFeedbackFilter;
 
   /* =========== GET TRANSLATION ============================ */
-  document.getElementById("translateBtn").onclick = async (e) => {
-    e.preventDefault();
+document.getElementById("translateBtn").onclick = async (e) => {
+  e.preventDefault();
 
-    const prompt = document.getElementById("prompt").value.trim();
-    const langEl = document.getElementById("language");
-    const target = langEl.value;
-    const selOpt = langEl.selectedOptions[0];
+  /* which mode did the user pick? ---------------------------------- */
+  const mode   = document.querySelector('input[name="mode"]:checked')?.value || "translate";
+  const prompt = document.getElementById("prompt").value.trim();
 
-    if (!prompt) { alert("Enter tagline first!"); return; }
-    if (selOpt.disabled) { alert("Language coming soon!"); return; }
+  if (!prompt) { alert("Enter tagline first!"); return; }
 
+  /* ----------  A.  REPHRASE (English ➜ better English)  ----------- */
+  if (mode === "rephrase") {
     showSpin(true);
     try {
-      const res = await fetch(`${backendUrl}/full-process/`, {
-        method: "POST",
+      const r = await authFetch(`${backendUrl}/rephrase/`, {
+        method : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, target_language: target })
+        body   : JSON.stringify({ prompt })
       });
-      const data = await res.json();
+      if (!r.ok) throw Error("Backend");
 
-      document.getElementById("translatedText").textContent = data.translated_text;
+      const d = await r.json();
+      document.getElementById("translatedText").textContent = d.rephrased;
       document.getElementById("result").style.display = "block";
-      document.getElementById("resultHeading").scrollIntoView({behavior:"smooth"});
-      document.getElementById("feedbackControls").style.display = "flex";
+      document.getElementById("resultHeading")?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("feedbackControls").style.display = "none"; // 👍👎 hidden
+      window.currentSession = null;                                       // nothing to rate
+    } catch { alert("Backend unreachable."); }
+    finally { showSpin(false); }
+    return;                                       // 🠊 stop; no translation path
+  }
 
-      window.currentSession = {
-        original_prompt: prompt,
-        translated_text: data.translated_text,
-        lang_code: target,
-        lang_name: selOpt.text
-      };
+  /* ----------  B.  TRANSLATE (any language)  ---------------------- */
+  const langEl = document.getElementById("language");
+  const target = langEl.value;
+  const selOpt = langEl.selectedOptions[0];
 
-    } catch {
-      alert("Backend unreachable.");
-    } finally {
-      showSpin(false);
-    }
-  };
+  if (selOpt.disabled) { alert("Language coming soon!"); return; }
+
+  showSpin(true);
+  try {
+    const res = await authFetch(`${backendUrl}/full-process/`, {
+      method : "POST",
+      headers: { "Content-Type": "application/json" },
+      body   : JSON.stringify({ prompt, target_language: target })
+    });
+    if (!res.ok) throw Error("Backend");
+
+    const data = await res.json();
+
+    document.getElementById("translatedText").textContent = data.translated_text;
+    document.getElementById("result").style.display = "block";
+    document.getElementById("resultHeading")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("feedbackControls").style.display = "flex";   // 👍👎 visible
+
+    window.currentSession = {
+      original_prompt: prompt,
+      translated_text: data.translated_text,
+      lang_code      : target,
+      lang_name      : selOpt.text
+    };
+  } catch {
+    alert("Backend unreachable.");
+  } finally {
+    showSpin(false);
+  }
+};
 
   /* =========== GOOD / BAD buttons ========================= */
   async function sendFeedback(type) {
