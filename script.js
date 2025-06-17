@@ -162,6 +162,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.warn("Backend offline – table will remain empty");
   }
 
+  /* ---------- disable language picker when “Rephrase” is chosen ---- */
+  const modeRadios = document.querySelectorAll('input[name="mode"]');
+  const langSelect = document.getElementById("language");
+  function toggleLang() {
+    const isRephrase =
+          document.querySelector('input[name="mode"]:checked').value === "rephrase";
+    langSelect.disabled     = isRephrase;
+    langSelect.style.opacity = isRephrase ? 0.45 : 1;
+  }
+  modeRadios.forEach(r => r.addEventListener("change", toggleLang));
+  toggleLang();               // run once on load
+
   /* === FEEDBACK TABLE ===================================== */
   async function loadFeedbacks() {
     try {
