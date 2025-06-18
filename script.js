@@ -213,41 +213,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 document.getElementById("translateBtn").onclick = async (e) => {
   e.preventDefault();
 
-  /* which mode did the user pick? ---------------------------------- */
   const mode   = document.querySelector('input[name="mode"]:checked')?.value || "translate";
   const prompt = document.getElementById("prompt").value.trim();
+  if (!prompt) return alert("Enter tagline first!");
 
-  if (!prompt) { alert("Enter tagline first!"); return; }
+  /* ---------- decide destination language ---------------- */
+  let target, targetName;
 
-  /* ----------  A.  REPHRASE (English ➜ better English)  ----------- */
-  if (mode === "rephrase") {
-    showSpin(true);
-    try {
-      const r = await fetch(`${backendUrl}/rephrase/`, {
-        method : "POST",
-        headers: { "Content-Type": "application/json" },
-        body   : JSON.stringify({ prompt })
-      });
-      if (!r.ok) throw Error("Backend");
-
-      const d = await r.json();
-      document.getElementById("translatedText").textContent = d.rephrased;
-      document.getElementById("result").style.display = "block";
-      document.getElementById("resultHeading")?.scrollIntoView({ behavior: "smooth" });
-      document.getElementById("feedbackControls").style.display = "none"; // 👍👎 hidden
-      window.currentSession = null;                                       // nothing to rate
-    } catch { alert("Backend unreachable."); }
-    finally { showSpin(false); }
-    return;                                       // 🠊 stop; no translation path
+  if (mode === "rephrase") {               // EN → better EN
+    target      = "EN";                    // hard-wire English
+    targetName  = "English";
+  } else {                                 // normal Translate
+    const langEl = document.getElementById("language");
+    const selOpt = langEl.selectedOptions[0];
+    if (selOpt.disabled) return alert("Language coming soon!");
+    target      = langEl.value;
+    targetName  = selOpt.text;
   }
 
-  /* ----------  B.  TRANSLATE (any language)  ---------------------- */
-  const langEl = document.getElementById("language");
-  const target = langEl.value;
-  const selOpt = langEl.selectedOptions[0];
-
-  if (selOpt.disabled) { alert("Language coming soon!"); return; }
-
+  /* ---------- call the SAME endpoint --------------------- */
   showSpin(true);
   try {
     const res = await fetch(`${backendUrl}/full-process/`, {
@@ -260,16 +244,19 @@ document.getElementById("translateBtn").onclick = async (e) => {
     const data = await res.json();
 
     document.getElementById("translatedText").textContent = data.translated_text;
-    document.getElementById("result").style.display = "block";
+    document.getElementById("result").style.display      = "block";
     document.getElementById("resultHeading")?.scrollIntoView({ behavior: "smooth" });
-    document.getElementById("feedbackControls").style.display = "flex";   // 👍👎 visible
+
+    /* 👍 👎 stay available for both modes */
+    document.getElementById("feedbackControls").style.display = "flex";
 
     window.currentSession = {
-      original_prompt: prompt,
-      translated_text: data.translated_text,
-      lang_code      : target,
-      lang_name      : selOpt.text
+      original_prompt : prompt,
+      translated_text : data.translated_text,
+      lang_code       : target,      // "EN" if rephrase
+      lang_name       : targetName
     };
+
   } catch {
     alert("Backend unreachable.");
   } finally {
