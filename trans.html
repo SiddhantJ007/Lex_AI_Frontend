@@ -164,6 +164,23 @@ button:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
   width:100%;margin-top:1rem;padding:.65rem 1rem;border:2px solid #e5e7eb;
   border-radius:10px;font-size:.95rem;outline:none
 }
+
+/* ---------- Chatbot “Ask me anything” hint ---------- */
+.chat-hint{
+  position:fixed;
+  /* sits 16 px to the left of the round bot button */
+  right:calc(70px + 16px);   /* 70 px ≈ btn diameter, adjust if yours differs  */
+  bottom:32px;               /* aligns vertically with the button */
+  background:#ffffff;
+  color:#00bfc7;             /* teal accent – matches brand */
+  font-weight:600;
+  font-size:.95rem;
+  padding:8px 14px;
+  border-radius:24px;
+  box-shadow:0 3px 10px rgba(0,0,0,.12);
+  pointer-events:none;       /* let clicks pass through to the button */
+  z-index:9999;              /* sit above everything */
+}
   
 /* ========== FOOTER ========== */
 .site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem 3rem;margin-top:60px}
@@ -442,5 +459,6 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
     s.parentNode.insertBefore(v, s);
   })(document, 'script');
 </script>
+<span id="chatHint" class="chat-hint">Ask&nbsp;me&nbsp;anything</span>
 </body>
 </html>
