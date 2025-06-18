@@ -168,18 +168,28 @@ button:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.12)}
 /* ---------- Chatbot “Ask me anything” hint ---------- */
 .chat-hint{
   position:fixed;
-  /* sits 16 px to the left of the round bot button */
-  right:calc(70px + 16px);   /* 70 px ≈ btn diameter, adjust if yours differs  */
-  bottom:32px;               /* aligns vertically with the button */
+  right:calc(70px + 20px);      /* 70 px ≈ launcher Ø – adjust if needed  */
+  bottom:40px;                  /* drops it ~8 px to align mid-icon       */
   background:#ffffff;
-  color:#00bfc7;             /* teal accent – matches brand */
-  font-weight:600;
-  font-size:.95rem;
-  padding:8px 14px;
-  border-radius:24px;
+  color:#00bfc7;                /* teal accent – matches brand            */
+  font:600 .92rem/1.2 'Poppins',sans-serif;
+  padding:8px 16px;
+  border-radius:18px;           /* slightly softer rectangle              */
   box-shadow:0 3px 10px rgba(0,0,0,.12);
-  pointer-events:none;       /* let clicks pass through to the button */
-  z-index:9999;              /* sit above everything */
+  pointer-events:none;
+  z-index:9999;
+  position:fixed;
+}
+
+.chat-hint::after{              /* ► little arrow pointing to the button  */
+  content:'';
+  position:absolute;
+  right:-8px;                   /* nudges tail to touch launcher gap      */
+  top:50%;
+  transform:translateY(-50%);
+  border-left:8px solid #ffffff;   /* arrow colour = bubble colour        */
+  border-top:6px solid transparent;
+  border-bottom:6px solid transparent;
 }
   
 /* ========== FOOTER ========== */
