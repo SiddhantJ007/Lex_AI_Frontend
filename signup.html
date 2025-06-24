@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexAi – Create account</title>
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"><!-- not used here but keeps look ≈ -->
+
+<style>
+:root{--brand-green:#00c2b5;--brand-teal:#00bfc7;--glass-bg:rgba(255,255,255,.35);--glass-blur:20px;--footer-bg:#0b0d19}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;color:#0b0d19;background:#f4f6f8}
+
+main{padding-top:110px;max-width:480px;margin:auto}
+
+/*** navbar / footer ========= ***/
+.glass{position:fixed;top:0;left:0;width:100%;z-index:999;display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 4vw;background:var(--glass-bg);backdrop-filter:blur(var(--glass-blur))}
+.brand{font:700 1.4rem/1 'Poppins';color:var(--brand-green);text-decoration:none}
+.nav-links{list-style:none;display:flex;gap:2.4rem}
+.nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
+.nav-item:hover{color:var(--brand-teal)}
+.btn-cta{background:var(--brand-green);color:#fff;padding:.55rem 1.6rem;border-radius:25px;font-weight:600;font-size:.9rem;text-decoration:none}
+
+.section{background:#fff;padding:2.2rem;border-radius:14px;box-shadow:0 4px 10px rgba(0,0,0,.05);text-align:center}
+h1{font-size:1.8rem;font-weight:700;margin-bottom:.6rem}
+p.lead{margin-bottom:1.6rem;color:#36414d}
+input{width:100%;padding:14px;border:2px solid #e5e7eb;border-radius:10px;font-size:.95rem;margin-bottom:1rem}
+button{cursor:pointer;font-weight:600;font-size:.95rem;border:none;border-radius:45px;padding:12px 32px;background:var(--brand-green);color:#fff}
+button:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.1);transition:.22s}
+
+/* reuse footer styles from trans.html (shortened) */
+.site-footer{background:var(--footer-bg);color:#d1d1d1;padding:4rem 2rem 3rem;margin-top:70px;font-size:.9rem;text-align:center}
+</style>
+</head>
+
+<body>
+<nav class="glass">
+  <a href="index.html" class="brand">LexAi</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="nav-item">Home</a></li>
+    <li><a href="#"         class="nav-item">Features</a></li>
+    <li><a href="about.html" class="nav-item">About</a></li>
+  </ul>
+  <a href="login.html" class="btn-cta">Log&nbsp;in</a>
+</nav>
+
+<main>
+  <section class="section">
+    <h1>Create your account</h1>
+    <p class="lead">Start translating &amp; optimising in seconds.</p>
+
+    <input id="suEmail"    type="email"    placeholder="Email address" autocomplete="email" required>
+    <input id="suPass"     type="password" placeholder="Password (min 6 chars)" minlength="6" required>
+    <input id="suPass2"    type="password" placeholder="Repeat password" minlength="6" required>
+
+    <button id="signupBtn">Sign&nbsp;up</button>
+    <p style="margin-top:1rem;font-size:.9rem">Already have an account?
+       <a href="login.html" style="color:var(--brand-teal);text-decoration:none">Log in</a></p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  © 2025 LexAi – All rights reserved
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>
