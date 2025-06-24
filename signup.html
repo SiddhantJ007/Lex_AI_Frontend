@@ -119,47 +119,64 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
     <button onclick="lexClose()">OK</button>
   </div>
 </div>
-
 <script>
-const backendUrl = "https://lex-ai.duckdns.org";
+const backendUrl = "https://lex-ai.duckdns.org";         
 
-/* ---------- modal helpers ---------- */
+/* ---------- modal helpers -------------------------------- */
 function lexAlert(msg){
   document.getElementById("lexMsg").textContent = msg;
   document.getElementById("lexModal").style.display = "flex";
 }
-function lexClose(){ document.getElementById("lexModal").style.display="none" }
+function lexClose(){ document.getElementById("lexModal").style.display = "none"; }
 
-/* ---------- show / hide password ---------- */
+/* ---------- show / hide password ------------------------- */
 function togglePw(id, btn){
-  const field = document.getElementById(id);
-  const isPwd = field.type === "password";
-  field.type  = isPwd ? "text" : "password";
-  btn.textContent = isPwd ? "🙈" : "👁️";
+  const field  = document.getElementById(id);
+  const hidden = field.type === "password";
+  field.type   = hidden ? "text" : "password";
+  /* open eye when text is visible, closed eye when hidden  */
+  btn.textContent = hidden ? "👁️" : "🕶️"; 
 }
 
-/* ---------- form submit ---------- */
-document.getElementById("signForm").onsubmit = async e=>{
+/* ---------- basic helpers -------------------------------- */
+const isEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+/* ---------- form submit ---------------------------------- */
+document.getElementById("signForm").onsubmit = async e => {
   e.preventDefault();
+
   const email = document.getElementById("email").value.trim();
   const pw1   = document.getElementById("pw").value;
   const pw2   = document.getElementById("pw2").value;
 
-  if (pw1 !== pw2) return lexAlert("Passwords do not match.");
+  /* quick front-end validations */
+  if (!isEmail(email))           return lexAlert("Please enter a valid e-mail.");
+  if (pw1.length < 6)            return lexAlert("Password must be 6+ characters.");
+  if (pw1 !== pw2)               return lexAlert("Passwords do not match.");
 
   try{
-    const r = await fetch(`${backendUrl}/signup`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ email,password:pw1 })
+    const r = await fetch(`${backendUrl}/signup`, {      // ← absolute path
+      method : "POST",
+      headers: { "Content-Type":"application/json" },
+      body   : JSON.stringify({ email, password: pw1 })
     });
-    if(!r.ok){
-      const j = await r.json().catch(()=>({detail:"Signup failed"}));
-      return lexAlert(j.detail||"Signup failed");
+
+    if (!r.ok){
+      /* FastAPI sends JSON {"detail": "..."} for any error - catch & relay */
+      const j = await r.json().catch(() => ({}));
+      const msg = j.detail || (r.status === 409
+                   ? "E-mail already registered."
+                   : "Signup failed.");
+      return lexAlert(msg);
     }
-    lexAlert("Account created! You can now log in.");
-    setTimeout(()=>location.href="login.html",1200);
-  }catch{ lexAlert("Backend unreachable."); }
+
+    /* success → tiny delay then bounce to login page */
+    lexAlert("Account created! Redirecting to log-in …");
+    setTimeout(()=> location.href = "login.html", 1500);
+
+  } catch{
+    lexAlert("Backend unreachable. Please try again in a minute.");
+  }
 };
 </script>
 </body>
