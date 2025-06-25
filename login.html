@@ -96,41 +96,62 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
 </div>
 
 <script>
-const backendUrl = "https://lex-ai.duckdns.org";
+const backendUrl = "https://lex-ai.duckdns.org";           // keep as-is
 
-/* modal helpers */
+/* ---------- tiny modal helpers -------------------------- */
 function lexAlert(msg){
   document.getElementById("lexMsg").textContent = msg;
   document.getElementById("lexModal").style.display = "flex";
 }
-function lexClose(){ document.getElementById("lexModal").style.display="none" }
+function lexClose(){ document.getElementById("lexModal").style.display="none";}
 
-/* pw toggle */
+/* ---------- show / hide password ------------------------ */
 function togglePw(id,btn){
-  const f=document.getElementById(id);
-  const show=f.type==="password";
-  f.type=show?"text":"password";
-  btn.textContent=show?"🙈":"👁️";
+  const f = document.getElementById(id);
+  const hid = f.type === "password";
+  f.type = hid ? "text" : "password";
+  btn.textContent = hid ? "👁️" : "🕶️";
 }
 
-/* submit */
+/* quick helper */
+const isEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+/* ---------- submit handler ------------------------------ */
 document.getElementById("loginForm").onsubmit = async e=>{
   e.preventDefault();
-  const email=document.getElementById("email").value.trim();
-  const pw   =document.getElementById("pw").value;
+
+  const email = document.getElementById("email").value.trim();
+  const pwd   = document.getElementById("pw").value;
+
+  if(!isEmail(email)) return lexAlert("Enter a valid e-mail.");
+  if(!pwd)            return lexAlert("Password required.");
+
+  /*  build x-www-form-urlencoded payload  */
+  const body = new URLSearchParams({
+    grant_type : "",            // required but may be blank
+    username   : email,
+    password   : pwd,
+    scope      : "",
+    client_id  : "",
+    client_secret: ""
+  });
+
   try{
-    const r=await fetch(`${backendUrl}/login`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/x-www-form-urlencoded" },
-      body:new URLSearchParams({ username:email, password:pw })
+    const r = await fetch(`${backendUrl}/login`,{
+      method : "POST",
+      headers: { "Content-Type":"application/x-www-form-urlencoded" },
+      body   : body.toString()
     });
+
     if(!r.ok){
-      const j=await r.json().catch(()=>({detail:"Login failed"}));
-      return lexAlert(j.detail||"Login failed");
+      return lexAlert("Incorrect e-mail or password.");
     }
-    const {access_token}=await r.json();
-    localStorage.setItem("lexai_token",access_token);
-    location.href="trans.html";
+
+    const {access_token} = await r.json();
+    /* persist & go to app ------------------------------------------------ */
+    localStorage.setItem("lexai_token", access_token);
+    location.href = "trans.html";
+
   }catch{ lexAlert("Backend unreachable."); }
 };
 </script>
