@@ -128,7 +128,7 @@ document.getElementById("loginForm").onsubmit = async e=>{
 
   /*  build x-www-form-urlencoded payload  */
   const body = new URLSearchParams({
-    grant_type : "",            // required but may be blank
+    grant_type : "password",            // required but may be blank
     username   : email,
     password   : pwd,
     scope      : "",
