@@ -445,9 +445,11 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
     const url = `${backendUrl}/feedbacks/download?${qs.toString()}`;
 
-    const probe = await apiFetch(url, { method: "GET" });
+    const probe = await apiFetch(url, { method: "GET" });     // auth header sent
     if (probe.ok) {
-      window.location.href = url;
+    /* second request (the real file) can’t send the header, so append token */
+    const token = localStorage.getItem("lexai_token") || "";
+    window.location.href = url + `&access_token=${encodeURIComponent(token)}`;
     } else {
       alert("No feedbacks match this selection.");
     }
