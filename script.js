@@ -9,6 +9,29 @@ function apiFetch(url, options = {}) {
   return fetch(url, { ...options, headers: heads });
 }
 
+async function refreshQuota(){
+  const token = localStorage.getItem("lexai_token") || "";
+  if(!token) return;                    // not logged in
+
+  try{
+    const res = await fetch(`${backendUrl}/quota`,{
+      headers:{ Authorization:`Bearer ${token}` }
+    });
+    if(!res.ok) throw 0;
+    const {limit, used} = await res.json();
+    const pct = Math.min(100, Math.round(used/limit*100));
+    document.getElementById("quotaBar").style.width = pct+"%";
+
+    /* warn & lockout */
+    if(pct > 95){
+      alert("Daily translation quota reached — come back tomorrow!");
+      document.querySelectorAll("button.primary-btn").forEach(b=>b.disabled=true);
+    }else if(pct > 85){
+      toast("⚠️  Only "+(limit-used)+" characters left today");
+    }
+  }catch{/* silently ignore */}
+}
+
 /* ========== BEGIN LexAi modal helpers (alert / confirm / prompt) ========== */
 (function () {
 
@@ -269,6 +292,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
   } finally {
     showSpin(false);
   }
+  await refreshQuota();
 };
 
   /* =========== GOOD / BAD buttons ========================= */
@@ -516,6 +540,7 @@ document.getElementById("logoutBtn")?.addEventListener("click", e=>{
   localStorage.removeItem("lexai_uid");          // optional – fresh anon id
   location.href = "login.html";
 });
+await refreshQuota();
 });
 
 document.addEventListener("DOMContentLoaded", () => {
