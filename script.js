@@ -300,7 +300,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
       lang_code       : target,      // "EN" if rephrase
       lang_name       : targetName
     };
-
+    await refreshQuota();
   } catch {
     alert("Backend unreachable.");
   } finally {
