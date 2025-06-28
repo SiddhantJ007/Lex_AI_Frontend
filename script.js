@@ -1,6 +1,13 @@
 const backendUrl = "https://lex-ai.duckdns.org";
+const authToken = localStorage.getItem("lexai_token");
 let dt = null;
 let includeVariants = false;
+
+function apiFetch(url, options = {}) {
+  const heads = options.headers || {};
+  if (authToken) heads["Authorization"] = `Bearer ${authToken}`;
+  return fetch(url, { ...options, headers: heads });
+}
 
 /* ========== BEGIN LexAi modal helpers (alert / confirm / prompt) ========== */
 (function () {
@@ -126,7 +133,7 @@ function showSpin(on = true) {
 /* ---------- tiny helper ---------- */
 async function pingBackend() {
   try {
-    const r = await fetch(`${backendUrl}/ping`, { cache: "no-store" });
+    const r = await apiFetch(`${backendUrl}/ping`, { cache: "no-store" });
     return r.ok;
   } catch { return false; }
 }
@@ -166,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function loadFeedbacks() {
     try {
       const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
-      const res = await fetch(
+      const res = await apiFetch(
         `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
         { cache: "no-store" }
       );
@@ -234,7 +241,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
   /* ---------- call the SAME endpoint --------------------- */
   showSpin(true);
   try {
-    const res = await fetch(`${backendUrl}/full-process/`, {
+    const res = await apiFetch(`${backendUrl}/full-process/`, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
       body   : JSON.stringify({ prompt, target_language: target })
@@ -281,7 +288,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
       reason: null
     };
 
-    const res = await fetch(`${backendUrl}/feedback/`, {
+    const res = await apiFetch(`${backendUrl}/feedback/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -307,7 +314,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
     spinnerOn("Generating ideas…");
     try {
-      const r = await fetch(`${backendUrl}/copy-variants/`, {
+      const r = await apiFetch(`${backendUrl}/copy-variants/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -347,7 +354,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
         const li = btn.closest("li");
         const variantText = li.querySelector("span").textContent;
 
-        const res = await fetch(`${backendUrl}/variant-feedback/`, {
+        const res = await apiFetch(`${backendUrl}/variant-feedback/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -395,7 +402,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
         reason: reason
       };
 
-      const res = await fetch(`${backendUrl}/feedback/regenerate`, {
+      const res = await apiFetch(`${backendUrl}/feedback/regenerate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -438,7 +445,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
     const url = `${backendUrl}/feedbacks/download?${qs.toString()}`;
 
-    const probe = await fetch(url, { method: "GET" });
+    const probe = await apiFetch(url, { method: "GET" });
     if (probe.ok) {
       window.location.href = url;
     } else {
@@ -452,7 +459,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
   
     try {
       /* backend expects DELETE /feedbacks/clear  (same base URL) */
-      const res = await fetch(`${backendUrl}/feedbacks/clear`, {
+      const res = await apiFetch(`${backendUrl}/feedbacks/clear`, {
         method: "DELETE"
       });
   
@@ -482,7 +489,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
       ? "/upload-pdf/" : "/upload-image/";
 
     try {
-      const r = await fetch(`${backendUrl}${endpoint}`, {
+      const r = await apiFetch(`${backendUrl}${endpoint}`, {
         method: "POST", body: form
       });
       const d = await r.json();
