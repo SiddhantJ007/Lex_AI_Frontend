@@ -436,21 +436,25 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
   /* =========== DOWNLOAD Excel ============================= */
   document.getElementById("downloadBtn").onclick = async () => {
-   const filterSel  = document.getElementById("filterSelect").value;
-   const includeAlt = document.getElementById("variantsChk").checked;
- 
-   const qs = new URLSearchParams({
-       include_variants : includeAlt,
-       access_token     : localStorage.getItem("lexai_token") || ""
-   });
-   if (filterSel !== "all") qs.append("type", filterSel);
-   /* one direct redirect – browser handles the file download */
-   window.location.href = `${backendUrl}/feedbacks/download?${qs.toString()}`;
+    const filterSel = document.getElementById("filterSelect").value;
+    const includeAlt = document.getElementById("variantsChk").checked;
+
+    const qs = new URLSearchParams();
+    if (filterSel !== "all") qs.append("type", filterSel);
+    qs.append("include_variants", includeAlt);
+
+    const url = ${backendUrl}/feedbacks/download?${qs.toString()};
+
+   const probe = await apiFetch(url, { method: "GET" });     // auth header sent
+   if (probe.ok) {
+     /* second request (the real file) can’t send the header, so append token */
+     const token = localStorage.getItem("lexai_token") || "";
+     window.location.href = url + `&access_token=${encodeURIComponent(token)}`;
     } else {
       alert("No feedbacks match this selection.");
     }
   };
-
+  
   /* =========== CLEAR FEEDBACKS ============================ */
   document.getElementById('clearBtn').onclick = async () => {
     if (!await lexConfirm("Delete ALL feedback rows?")) return;
