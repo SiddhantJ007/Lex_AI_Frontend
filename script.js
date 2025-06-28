@@ -10,26 +10,39 @@ function apiFetch(url, options = {}) {
 }
 
 async function refreshQuota(){
-  const token = localStorage.getItem("lexai_token") || "";
-  if(!token) return;                    // not logged in
+  const token = localStorage.getItem("lexai_token");
+  if(!token) return;
 
   try{
-    const res = await fetch(`${backendUrl}/quota`,{
-      headers:{ Authorization:`Bearer ${token}` }
-    });
+    const res  = await fetch(`${backendUrl}/quota`, {
+                  headers:{ Authorization:`Bearer ${token}` }
+                });
     if(!res.ok) throw 0;
     const {limit, used} = await res.json();
-    const pct = Math.min(100, Math.round(used/limit*100));
-    document.getElementById("quotaBar").style.width = pct+"%";
 
-    /* warn & lockout */
-    if(pct > 95){
-      alert("Daily translation quota reached — come back tomorrow!");
-      document.querySelectorAll("button.primary-btn").forEach(b=>b.disabled=true);
-    }else if(pct > 85){
-      toast("⚠️  Only "+(limit-used)+" characters left today");
+    const pct   = Math.min(100, Math.round(used/limit*100));
+    const bar   = document.getElementById("quotaBar");
+    const wrap  = document.getElementById("quotaWrap");
+
+    bar.style.width = pct + "%";
+    wrap.title      = `Daily quota: ${used.toLocaleString()} / ${limit.toLocaleString()} chars`;
+
+    /* soft alert once */
+    if(pct >= 85 && !window._quotaWarned){
+      toast(`⚠️ ${(limit-used).toLocaleString()} characters left today`);
+      window._quotaWarned = true;
     }
-  }catch{/* silently ignore */}
+
+    /* hard lock */
+    if(pct >= 100){
+      document.querySelectorAll("button.primary-btn")
+              .forEach(b=>b.disabled=true);
+      if(!window._quotaLocked){
+        alert("Daily quota reached — back tomorrow!");
+        window._quotaLocked = true;
+      }
+    }
+  }catch{/* quietly ignore if backend down */}
 }
 
 /* ========== BEGIN LexAi modal helpers (alert / confirm / prompt) ========== */
@@ -177,6 +190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* only try to load feedbacks if ping succeeded */
   if (backendUp) {
     await loadFeedbacks();
+    await refreshQuota();
     if (!window._filterBound) {
       document.getElementById("filterSelect").onchange = () => {
         const wanted = document.getElementById("filterSelect").value;
@@ -292,7 +306,6 @@ document.getElementById("translateBtn").onclick = async (e) => {
   } finally {
     showSpin(false);
   }
-  await refreshQuota();
 };
 
   /* =========== GOOD / BAD buttons ========================= */
@@ -320,6 +333,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
     if (res.ok) {
       await loadFeedbacks();
+      await refreshQuota();
     } else {
       const err = await res.json();
       console.error(err);
@@ -333,6 +347,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
     await sendFeedback("Good");
     await loadFeedbacks();
+    await refreshQuota();
 
     if (!await lexConfirm("Saved!  Would you like 5 alternative suggestions?")) return;
 
@@ -395,6 +410,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
           toast("Saved!");
           li.querySelectorAll(".vote").forEach(b => b.remove());
           loadFeedbacks();
+          await refreshQuota();
         } else {
           toast("Save failed!");
         }
@@ -439,6 +455,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
       window.currentSession.original_prompt = out.improved_prompt;
 
       await loadFeedbacks();
+      await refreshQuota();
       alert("Done! Translation regenerated.");
     } catch (e) {
       console.error(e);
@@ -493,7 +510,8 @@ document.getElementById("translateBtn").onclick = async (e) => {
       });
   
       if (res.ok) {
-        await loadFeedbacks();               // refresh the table
+        await loadFeedbacks();
+        await refreshQuota();     // refresh the table
         alert("All feedbacks cleared.");
       } else {
         const err = await res.json();
@@ -540,7 +558,6 @@ document.getElementById("logoutBtn")?.addEventListener("click", e=>{
   localStorage.removeItem("lexai_uid");          // optional – fresh anon id
   location.href = "login.html";
 });
-await refreshQuota();
 });
 
 document.addEventListener("DOMContentLoaded", () => {
