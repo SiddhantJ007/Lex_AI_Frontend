@@ -508,6 +508,14 @@ document.getElementById("translateBtn").onclick = async (e) => {
       alert("Backend unreachable.");
     }
   };
+
+  /* ---------- LOG-OUT ------------------------------------- */
+document.getElementById("logoutBtn")?.addEventListener("click", e=>{
+  e.preventDefault();
+  localStorage.removeItem("lexai_token");
+  localStorage.removeItem("lexai_uid");          // optional – fresh anon id
+  location.href = "login.html";
+});
 });
 
 document.addEventListener("DOMContentLoaded", () => {
