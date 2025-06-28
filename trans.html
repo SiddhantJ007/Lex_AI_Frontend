@@ -216,6 +216,10 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   animation:lds 1.2s cubic-bezier(.5,0,.5,1) infinite;
   border-color:var(--brand-green) transparent transparent transparent}
 @keyframes lds{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+.nav-ctas{display:flex;gap:1.2rem;align-items:center;margin-left:auto}
+.btn-logout{background:#e74c3c}           /* keep red tone */
+@media(max-width:600px){.btn-logout{font-size:.8rem;padding:.45rem 1.2rem}}
 </style>
 </head>
 
@@ -237,10 +241,10 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
     <li><a href="#" class="nav-item">Pricing</a></li>
     <li><a href="about.html" class="nav-item">About</a></li>
   </ul>
-  <a href="#" id="logoutBtn" class="btn-cta" style="background:#e74c3c">
-  Log&nbsp;out
-</a>
+  <div class="nav-ctas">
+  <a href="#" id="logoutBtn" class="btn-cta btn-logout">Log&nbsp;out</a>
   <a href="#" class="btn-cta">Try&nbsp;for&nbsp;Free</a>
+</div>
 </nav>
 
 <main>
