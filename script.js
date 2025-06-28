@@ -435,25 +435,28 @@ document.getElementById("translateBtn").onclick = async (e) => {
   };
 
   /* =========== DOWNLOAD Excel ============================= */
-  document.getElementById("downloadBtn").onclick = async () => {
-    const filterSel = document.getElementById("filterSelect").value;
-    const includeAlt = document.getElementById("variantsChk").checked;
+ document.getElementById("downloadBtn").onclick = async () => {
+  const filterSel  = document.getElementById("filterSelect").value;
+  const includeAlt = document.getElementById("variantsChk").checked;
 
-    const qs = new URLSearchParams();
-    if (filterSel !== "all") qs.append("type", filterSel);
-    qs.append("include_variants", includeAlt);
+  /* build query-string */
+  const qs = new URLSearchParams();
+  if (filterSel !== "all") qs.append("type", filterSel);
+  qs.append("include_variants", includeAlt);
 
-    const url = ${backendUrl}/feedbacks/download?${qs.toString()};
+  /* full URL (template literal!) */
+  const url = `${backendUrl}/feedbacks/download?${qs.toString()}`;
 
-   const probe = await apiFetch(url, { method: "GET" });     // auth header sent
-   if (probe.ok) {
-     /* second request (the real file) can’t send the header, so append token */
-     const token = localStorage.getItem("lexai_token") || "";
-     window.location.href = url + `&access_token=${encodeURIComponent(token)}`;
-    } else {
-      alert("No feedbacks match this selection.");
-    }
-  };
+  /* probe first so we can send auth header */
+  const probe = await apiFetch(url, { method: "GET" });   // <- sends JWT header
+  if (probe.ok) {
+    /* real download – add token because browser can’t send custom headers */
+    const token = localStorage.getItem("lexai_token") || "";
+    window.location.href = `${url}&access_token=${encodeURIComponent(token)}`;
+  } else {
+    alert("No feedbacks match this selection.");
+  }
+};
   
   /* =========== CLEAR FEEDBACKS ============================ */
   document.getElementById('clearBtn').onclick = async () => {
