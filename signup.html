@@ -89,6 +89,8 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
     <h2>Create your account</h2>
     <p class="sub">Start translating&nbsp;&amp; optimising in seconds.</p>
 
+    <input id="fname" type="text" placeholder="First name" required>
+    
     <input id="email" type="email" placeholder="Email address" required>
 
     <div class="pw-wrap">
@@ -134,7 +136,7 @@ function togglePw(id, btn){
   const f   = document.getElementById(id);
   const hid = f.type === "password";
   f.type     = hid ? "text" : "password";
-  btn.textContent = hid ? "👁️" : "🚫👁️";    /* open ↔ closed */
+  btn.textContent = hid ? "👁️" : "🚫";    /* open ↔ closed */
 }
 
 /* --- helpers -------------------------------------------------------- */
