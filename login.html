@@ -135,8 +135,10 @@ document.getElementById("loginForm").onsubmit = async e=>{
     client_id  : "",
     client_secret: ""
   });
-
-  try{
+     
+  document.getElementById("loginSpin").style.display="flex";
+  
+     try{
     const r = await fetch(`${backendUrl}/login`,{
       method : "POST",
       headers: { "Content-Type":"application/x-www-form-urlencoded" },
@@ -152,8 +154,18 @@ document.getElementById("loginForm").onsubmit = async e=>{
     localStorage.setItem("lexai_token", access_token);
     location.href = "trans.html";
 
-  }catch{ lexAlert("Backend unreachable."); }
+  }catch{ 
+    lexAlert("Backend unreachable."); 
+  }finally{
+    document.getElementById("loginSpin").style.display="none";
+}
 };
 </script>
+<div id="loginSpin" style="
+      display:none;position:fixed;inset:0;z-index:9999;
+      background:rgba(255,255,255,.6);backdrop-filter:blur(2px);
+      align-items:center;justify-content:center;font:600 1rem Poppins">
+  Signing in …
+</div>
 </body>
 </html>
