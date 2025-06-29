@@ -206,47 +206,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.warn("Backend offline – table will remain empty");
   }
 
-  /* === FEEDBACK TABLE ===================================== */
-  async function loadFeedbacks() {
-    try {
-      const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
-      const res = await apiFetch(
-        `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
-        { cache: "no-store" }
-      );
-      if (!res.ok) throw new Error(`backend ${res.status}`);
+ /* === FEEDBACK TABLE ===================================== */
+async function loadFeedbacks () {
+  try {
+    const incAlt = document.getElementById("variantsChk").checked ? 1 : 0;
 
-      const data = await res.json();
-      const rows = data.map(fb => [
-        fb.id, fb.original_prompt, fb.translated_text,
-        fb.target_language, fb.feedback
-      ]);
+    /* auth header added automatically by apiFetch */
+    const res = await apiFetch(
+      `${backendUrl}/feedbacks/?include_variants=${incAlt}`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) throw new Error(`backend ${res.status}`);
 
-      if (!dt) {
-        dt = $('#feedbackTable').DataTable({
-          data: rows,
-          columns: [
-            { title: "ID" }, { title: "Original Prompt" },
-            { title: "Translated Text" }, { title: "Language" },
-            { title: "Feedback" }
-          ],
-          pageLength: 5,
-          order: [[0, 'desc']]
-        });
-        $('#feedbackTable').show();
-      } else {
-        dt.clear(); dt.rows.add(rows); dt.draw(false);
-      }
+    const data = await res.json();
 
-      applyFeedbackFilter();
-      $('#noRowsMsg').toggle(dt.rows({ filter: 'applied' }).count() === 0);
-      console.log(`Feedbacks loaded: ${rows.length}`);
+    /* --- local 1-based index instead of DB id ---------------- */
+    const rows = data.map((fb, idx) => [
+      idx + 1,                             // ← 1-based row number
+      fb.original_prompt,
+      fb.translated_text,
+      fb.target_language,
+      fb.feedback
+    ]);
 
-    } catch (e) {
-      console.error("loadFeedbacks failed:", e);
-      alert("Could not load feedbacks – see console.");
+    if (!dt) {
+      dt = $('#feedbackTable').DataTable({
+        data: rows,
+        columns: [
+          { title: "#" },                  // was “ID”
+          { title: "Original Prompt" },
+          { title: "Translated Text" },
+          { title: "Language" },
+          { title: "Feedback" }
+        ],
+        pageLength: 5,
+        order: [[0, 'desc']]
+      });
+      $('#feedbackTable').show();
+    } else {
+      dt.clear(); dt.rows.add(rows); dt.draw(false);
     }
+
+    applyFeedbackFilter();
+    $('#noRowsMsg').toggle(dt.rows({ filter: 'applied' }).count() === 0);
+    console.log(`Feedbacks loaded: ${rows.length}`);
+
+  } catch (e) {
+    console.error("loadFeedbacks failed:", e);
+    alert("Could not load feedbacks – see console.");
   }
+}
 
   /* --- one-time bindings ---------------------------------- */
   document.getElementById('refreshBtn').onclick = loadFeedbacks;
