@@ -45,6 +45,20 @@ async function refreshQuota(){
   }catch{/* quietly ignore if backend down */}
 }
 
+(async ()=>{
+  const t = localStorage.getItem("lexai_token");
+  if(!t) return;
+  try{
+    const r = await fetch(`${backendUrl}/me`,{
+      headers:{ Authorization:`Bearer ${t}` }
+    });
+    if(r.ok){
+      const {first} = await r.json();
+      document.getElementById("welcomeName").textContent = `Welcome, ${first}`;
+    }
+  }catch{ /* silent */ }
+})();
+
 /* ========== BEGIN LexAi modal helpers (alert / confirm / prompt) ========== */
 (function () {
 
