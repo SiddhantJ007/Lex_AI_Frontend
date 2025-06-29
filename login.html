@@ -51,6 +51,10 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
 .lex-box h4{font-size:1.25rem;margin-bottom:1rem;color:var(--brand-green)}
 .lex-box button{margin-top:1rem;padding:.55rem 1.4rem;border:none;border-radius:45px;
   background:var(--brand-green);color:#fff;font-weight:600;cursor:pointer}
+
+#pwResetModal .lex-box input{
+  border:2px solid #e5e7eb;border-radius:8px;
+}
 </style>
 </head>
 <body>
@@ -79,6 +83,9 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
 
     <button type="submit" class="primary">Log in</button>
     <small>Don’t have an account? <a href="signup.html">Sign up</a></small>
+    <small style="display:block;margin-top:1rem">
+    <a href="#" id="pwLostLink">Forgot password?</a>
+    </small>
   </form>
 </main>
 
@@ -161,11 +168,88 @@ document.getElementById("loginForm").onsubmit = async e=>{
 }
 };
 </script>
+<script>
+/* ---------- PW-RESET flow ------------------------------------ */
+const m = id => document.getElementById(id);
+
+function closePwReset(){ m("pwResetModal").style.display="none"; }
+
+document.getElementById("pwLostLink").onclick = e=>{
+  e.preventDefault();
+  m("pwStep1").style.display = "";
+  m("pwStep2").style.display = "none";
+  m("pwResetEmail").value = "";
+  m("pwResetModal").style.display = "flex";
+};
+
+/* STEP 1 – request code */
+async function sendReset(){
+  const email = m("pwResetEmail").value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return lexAlert("Enter a valid e-mail.");
+
+  await fetch(`${backendUrl}/pw-reset/request`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({email})
+  });
+
+  lexAlert("If this address exists, a code has been sent.");
+  m("pwStep1").style.display = "none";
+  m("pwStep2").style.display = "";
+}
+
+/* STEP 2 – confirm code + new pw */
+async function confirmReset(){
+  const code = m("pwCode").value.trim();
+  const pw   = m("pwNew").value.trim();
+  if(code.length < 4 || pw.length < 6)
+      return lexAlert("Fill both fields (≥6-char password).");
+
+  const r = await fetch(`${backendUrl}/pw-reset/confirm`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({code,new_password:pw})
+  });
+
+  if(r.ok){
+    lexAlert("Password updated — you can log in now.");
+    closePwReset();
+  }else{
+    lexAlert("Invalid or expired code.");
+  }
+}
+</script>
 <div id="loginSpin" style="
       display:none;position:fixed;inset:0;z-index:9999;
       background:rgba(255,255,255,.6);backdrop-filter:blur(2px);
       align-items:center;justify-content:center;font:600 1rem Poppins">
   Signing in …
+</div>
+<!-- === tiny “reset password” modal =============================== -->
+<div id="pwResetModal" class="lex-modal" style="display:none">
+  <div class="lex-box" style="max-width:340px">
+    <h4>Reset password</h4>
+
+    <!-- step 1: ask for e-mail -->
+    <p id="pwStep1">
+      Enter your account e-mail – we’ll send a 6-digit code.
+      <input id="pwResetEmail" type="email"
+             style="margin-top:.9rem;width:100%;padding:.6rem">
+      <button onclick="sendReset()" style="margin-top:1rem">Send&nbsp;code</button>
+    </p>
+
+    <!-- step 2: code + new pw -->
+    <div id="pwStep2" style="display:none">
+      <input id="pwCode" placeholder="Code"
+             style="width:100%;padding:.6rem;margin-top:.8rem">
+      <input id="pwNew" type="password" placeholder="New password (6+ chars)"
+             style="width:100%;padding:.6rem;margin-top:.8rem">
+      <button onclick="confirmReset()" style="margin-top:1rem">Update</button>
+    </div>
+
+    <button onclick="closePwReset()" style="margin-top:1.2rem">Close</button>
+  </div>
 </div>
 </body>
 </html>
