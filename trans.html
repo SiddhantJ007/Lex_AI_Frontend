@@ -529,6 +529,74 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
     s.parentNode.insertBefore(v, s);
   })(document, 'script');
 </script>
+<!-- ▸ daily-chat-quota.js  ← paste right under the Agentive loader -->
+<script>
+(async () => {
+  /* -------- CONFIG -------------------------------------------------- */
+  const CHAT_LIMIT_DAY   = 15;                // hard cap per user / day
+  const WARN_LEFT        = 5;                 // show toast when 5 left
+  const uidKey           = "lexai_uid";
+  const todayKey         = "lexai_chat_" + new Date().toISOString().slice(0, 10);
+  /* ------------------------------------------------------------------ */
+
+  /* stable device-UID (used elsewhere too) */
+  let uid = localStorage.getItem(uidKey);
+  if (!uid) { uid = crypto.randomUUID(); localStorage.setItem(uidKey, uid); }
+
+  let used = +localStorage.getItem(todayKey) || 0;
+
+  /* small helper toast ------------------------------------------------ */
+  function toast(msg) {
+    const box = Object.assign(document.createElement("div"), {
+      textContent: msg, className: "lex-toast"
+    });
+    Object.assign(box.style, {
+      position: "fixed", left: "50%", bottom: "24px", transform: "translateX(-50%)",
+      background: "#00c2b5", color: "#fff", padding: "8px 14px",
+      borderRadius: "6px", font: "600 .88rem Poppins,sans-serif",
+      zIndex: "9999", transition: "opacity .4s"
+    });
+    document.body.appendChild(box);
+    setTimeout(() => { box.style.opacity = "0"; setTimeout(()=>box.remove(),400); }, 2600);
+  }
+
+  /* wait until Agentive is ready ------------------------------------- */
+  const poll = setInterval(() => {
+    if (window.myChatWidget && window.myChatWidget.on) {
+      clearInterval(poll);
+
+      /* visual state (icon fade) */
+      function toggleIcon(disabled) {
+        const w = document.querySelector("agentive-chat-widget, agentive-widget");
+        if (w) w.style.opacity = disabled ? 0.35 : 1;
+        if (w) w.style.pointerEvents = disabled ? "none" : "auto";
+      }
+      if (used >= CHAT_LIMIT_DAY) toggleIcon(true);
+
+      /* intercept every message before it leaves ---------------------- */
+      window.myChatWidget.on("beforeSend", (message, next) => {
+        if (used >= CHAT_LIMIT_DAY) {
+          alert("Daily chat quota reached.\nPlease come back tomorrow.");
+          return;                       // block sending
+        }
+        used++;
+        localStorage.setItem(todayKey, used);
+
+        if (CHAT_LIMIT_DAY - used === WARN_LEFT) {
+          toast(`⚠️ Only ${WARN_LEFT} chat messages left today`);
+        }
+        if (used >= CHAT_LIMIT_DAY) toggleIcon(true);
+
+        next();                         // let the widget send
+      });
+    }
+  }, 400);
+})();
+</script>
+<style>
+/* toast appearance (reuse if you already have one) */
+.lex-toast{pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+</style>
 <span id="chatHint" class="chat-hint">Ask&nbsp;me&nbsp;anything</span>
 </body>
 </html>
