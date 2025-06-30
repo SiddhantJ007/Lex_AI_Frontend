@@ -533,18 +533,27 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 <!-- ▸ quota-guard.js  (paste just below the Agentive embed) -->
 <script>
 (() => {
-  /* ====== CONFIG (edit anytime) ====================================== */
-  const TOTAL_MSG_PER_MONTH = 200;          // workspace allowance
-  const EXPECTED_USERS      = 5;            // tweak → auto-calc per-user
-  const USER_LIMIT_MONTH    = Math.floor(TOTAL_MSG_PER_MONTH / EXPECTED_USERS);
+  /* ====== CONFIG you still control =================================== */
+  const TOTAL_MSG_PER_MONTH = 200;   // workspace quota from Agentive
+  const WARN_AT             = 5;     // when to warn user
+  const STORE_KEY           = "lexai_chat_" + new Date().toISOString().slice(0,7); // “yyyy-MM”
 
-  /* warn at 5 msgs left */
-  const WARN_AT   = 5;
-  const STORE_KEY = "lexai_chat_" + new Date().toISOString().slice(0,7); // "YYYY-MM"
+  /* ====== runtime values (will be filled below) ====================== */
+  let USER_LIMIT_MONTH = 40;   // fallback – overwritten after fetch
+  let used             = +localStorage.getItem(STORE_KEY) || 0;
 
-  /* ====== helpers ==================================================== */
-  const launcherSel = "button[id^='agentive-launcher']";  // Agentive’s floating icon
-  const lockWidget  = () =>{
+  /* ----- ask backend how many users exist ---------------------------- */
+  fetch("https://lex-ai.duckdns.org/stats/users")
+    .then(r => r.json())
+    .then(({count}) => {
+        if (Number.isFinite(count) && count > 0)
+            USER_LIMIT_MONTH = Math.floor(TOTAL_MSG_PER_MONTH / count);
+    })
+    .catch(()=>{/* network fail → keep fallback value */});
+
+  /* ====== (rest of original quota code remains exactly the same) ==== */
+  const launcherSel = "button[id^='agentive-launcher']";
+  const lockWidget  = () => {
       const icn = document.querySelector(launcherSel);
       if(icn){
         icn.style.opacity = .35;
@@ -553,37 +562,27 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
       }
   };
 
-  /* ====== startup ==================================================== */
-  let used = +localStorage.getItem(STORE_KEY) || 0;
-
-  /* poll until widget available, then hook ---------------------------- */
   const poll = setInterval(() => {
     if (window.myChatWidget && window.myChatWidget.on) {
       clearInterval(poll);
 
-      /* lock immediately if already over quota */
       if(used >= USER_LIMIT_MONTH){ lockWidget(); return; }
 
-      /* before every send … */
       window.myChatWidget.on("beforeSend", (msg, next) => {
-
-        if (used >= USER_LIMIT_MONTH) {
+        if (used >= USER_LIMIT_MONTH){
           lockWidget();
           alert("⚠️  Monthly chat quota reached ("+USER_LIMIT_MONTH+" messages).");
-          return;                       // block message
+          return;
         }
 
         used++;
         localStorage.setItem(STORE_KEY, used);
 
         const left = USER_LIMIT_MONTH - used;
-        if (left === 0) {
+        if (left === 0){
           lockWidget();
           alert("⚠️  You’ve used the last chat message for this month.");
-          return;                       // still send *this* one
-        }
-        if (left === WARN_AT) {
-          /* non-blocking heads-up */
+        } else if (left === WARN_AT){
           const n = document.createElement("div");
           n.textContent = "Only "+left+" chat messages left this month";
           Object.assign(n.style,{
@@ -594,8 +593,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
           document.body.appendChild(n);
           setTimeout(()=>n.remove(), 3500);
         }
-
-        next();                         // allow the send
+        next();           // allow send
       });
     }
   }, 400);
