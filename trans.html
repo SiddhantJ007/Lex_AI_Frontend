@@ -250,6 +250,19 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 .quota-wrap{width:90px;height:8px;border-radius:5px;background:#e1e5e9;position:relative}
 .quota-bar{position:absolute;inset:0;border-radius:5px;background:linear-gradient(90deg,#00c2b5 0%,#00bfc7 100%);width:0%;}
 
+/* ==== fine–tune navbar alignment ================================= */
+
+/* 1. shrink the gap between the “welcome” pill and the menu */
+.glass{ gap:1.4rem; }                 /* was 2 rem */
+
+/* 2. pull the menu left by removing its auto-push … */
+.nav-links{ margin-left:0; }          /* override previous auto margin */
+
+/* 3. … then push the quota + CTA group to the far right instead   */
+.nav-ctas{ margin-left:auto; }        /* keeps Log-out / Try-free right-aligned */
+
+/* optional – if you want the pill to sit a hair farther from the logo */
+.welcome{ margin-left:.6rem; }        /* small nudge, adjust to taste */
 </style>
 </head>
 
