@@ -194,7 +194,7 @@ async function sendReset(){
     body:JSON.stringify({email})
   });
 
-  lexAlert("If this address exists, a code has been sent.");
+  await lexAlert("If this address exists, a code has been sent.");
   m("pwStep1").style.display = "none";
   m("pwStep2").style.display = "";
 }
