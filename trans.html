@@ -527,122 +527,95 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 </script>
 
 <!-- ▸ quota-guard (paste *immediately* after the loader) -->
+<!-- ▸ quota-guard (DOM-observer version) -->
 <script>
 (() => {
-  /* === CONFIG & helpers (unchanged) =============================== */
-  const TOTAL_MSG_MONTH = 200;
-  const WARN_AT = 5;
-  const KEY = "lexai_chat_" + new Date().toISOString().slice(0, 7);
+  /* === CONFIG ========================================================= */
+  const TOTAL_MSG_MONTH = 200;     // workspace quota
+  const WARN_AT          = 5;      // toast when this many left
+  const KEY = "lexai_chat_" + new Date().toISOString().slice(0, 7); // yyyy-MM
 
-  let USER_LIMIT_MONTH = 40;
-  let used = +localStorage.getItem(KEY) || 0;
+  let USER_LIMIT_MONTH = 40;       // overwritten when /stats/users replies
+  let used             = +localStorage.getItem(KEY) || 0;
 
-  const log = (...a) => console.log("[quota-guard]", ...a);
+  /* --- fetch signed-up user count once -------------------------------- */
+  fetch("https://lex-ai.duckdns.org/stats/users")
+    .then(r => r.json())
+    .then(({count}) => {
+      if (Number.isFinite(count) && count > 0)
+        USER_LIMIT_MONTH = Math.floor(TOTAL_MSG_MONTH / count);
+      if (used >= USER_LIMIT_MONTH) lockWidget();
+    })
+    .catch(() => {/* keep fallback */});
+
+  /* --- helper to disable launcher ------------------------------------ */
   const launcherSel = "button[id^='agentive-launcher']";
-  const lockWidget = () => {
+  function lockWidget () {
     const btn = document.querySelector(launcherSel);
     if (btn) {
-      btn.style.opacity = 0.35;
+      btn.style.opacity = .35;
       btn.style.pointerEvents = "none";
       btn.title = "Monthly chat quota reached";
     }
-  };
+  }
   if (used >= USER_LIMIT_MONTH) lockWidget();
 
-  /* --- ask backend for user count --------------------------------- */
-  fetch("https://lex-ai.duckdns.org/stats/users")
-    .then(r => r.json())
-    .then(({ count }) => {
-      if (Number.isFinite(count) && count > 0) {
-        USER_LIMIT_MONTH = Math.floor(TOTAL_MSG_MONTH / count);
-        log("user count =", count, "→ per-user cap =", USER_LIMIT_MONTH);
-        if (used >= USER_LIMIT_MONTH) lockWidget();
-      }
-    })
-    .catch(() => log("could not fetch /stats/users — using fallback"));
+  /* === observe DOM once widget frame is present ====================== */
+  const poll = setInterval(() => {
+    const chatFrame = document.querySelector("iframe[src*='agentive']");
+    if (!chatFrame) return;                // widget not yet injected
 
-  /* === wait for widget ============================================ */
-  const ready = setInterval(() => {
-    const w = window.myChatWidget;
-    log("poll – widget:", !!w, "on():", typeof w?.on);
+    clearInterval(poll);
 
-    if (!w || typeof w.on !== "function") return; // not ready yet
-    clearInterval(ready);
-    log("widget ready, attempting hooks…");
+    /* messages live *inside* the iframe → observe its document */
+    chatFrame.addEventListener("load", () => {
+      const doc = chatFrame.contentDocument || chatFrame.contentWindow.document;
+      const container = doc.querySelector("[class*='messages']") || doc.body;
 
-    const tried = [];
+      /* guard – if structure changes give up silently */
+      if (!container) return;
 
-    function tryAttach(evt) {
-      tried.push(evt);
-      try {
-        w.on(evt, handleSend);
-        log("✅ attached via", evt);
-        return true;
-      } catch (err) {
-        log("⛔", evt, "failed –", err.message);
-        return false;
-      }
-    }
+      new MutationObserver(muts => {
+        muts.forEach(m => {
+          m.addedNodes.forEach(node => {
+            if (!(node instanceof HTMLElement)) return;
+            /* bubbles the user sends carry this class */
+            if (!node.classList.contains("agentive-bubble--user")) return;
 
-    if (tryAttach("chat:send")) return;
-    if (tryAttach("beforeSend")) return;
+            /* -------- quota check every actual send -------------- */
+            if (used >= USER_LIMIT_MONTH) {
+              lockWidget();
+              alert("⚠️  Monthly chat quota reached ("+USER_LIMIT_MONTH+")");
+              return;
+            }
 
-    /* ----- DOM-level fallback ------------------------------------ */
-    ["chat:send", "beforeSend", "agentive:beforeSend"].forEach(evt => {
-      window.addEventListener(evt, () => {
-        log("DOM event", evt);
-        handleSend();
-      });
+            used++;
+            try { localStorage.setItem(KEY, used); } catch{}
+
+            const left = USER_LIMIT_MONTH - used;
+            if (left === 0) {
+              lockWidget();
+              alert("⚠️  You’ve used the last chat message for this month.");
+            } else if (left === WARN_AT) {
+              toast("Only "+left+" chat messages left this month");
+            }
+          });
+        });
+      }).observe(container, {childList:true, subtree:true});
     });
-    log("using DOM fallback; events tried:", tried);
   }, 400);
 
-  /* === handler ===================================================== */
-  function handleSend() {
-    if (used >= USER_LIMIT_MONTH) {
-      lockWidget();
-      alert(
-        "⚠️  Monthly chat quota reached (" + USER_LIMIT_MONTH + " messages)."
-      );
-      return;
-    }
-
-    used++;
-    try {
-      localStorage.setItem(KEY, used);
-    } catch (e) {
-      log("localStorage write failed:", e);
-    }
-    log("send → used", used, "/", USER_LIMIT_MONTH);
-
-    const left = USER_LIMIT_MONTH - used;
-    if (left === 0) {
-      lockWidget();
-      alert("⚠️  You’ve used the last chat message for this month.");
-    } else if (left === WARN_AT) {
-      toast("Only " + left + " chat messages left this month");
-    }
-  }
-
   /* tiny toast */
-  function toast(msg) {
-    const n = document.createElement("div");
-    Object.assign(n.style, {
-      position: "fixed",
-      left: "50%",
-      bottom: "24px",
-      transform: "translateX(-50%)",
-      background: "#ffb703",
-      color: "#0b0d19",
-      padding: "10px 16px",
-      borderRadius: "6px",
-      font: "600 14px Poppins,sans-serif",
-      zIndex: 9999,
-      boxShadow: "0 3px 10px rgba(0,0,0,.15)"
+  function toast (msg) {
+    const n = Object.assign(document.createElement("div"), {textContent: msg});
+    Object.assign(n.style,{
+      position:"fixed",left:"50%",bottom:"24px",transform:"translateX(-50%)",
+      background:"#ffb703",color:"#0b0d19",padding:"10px 16px",
+      borderRadius:"6px",font:"600 14px Poppins,sans-serif",
+      zIndex:9999,boxShadow:"0 3px 10px rgba(0,0,0,.15)"
     });
-    n.textContent = msg;
     document.body.appendChild(n);
-    setTimeout(() => n.remove(), 3500);
+    setTimeout(()=>n.remove(),3500);
   }
 })();
 </script>
