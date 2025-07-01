@@ -510,99 +510,26 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 </div>
 
 <script type="text/javascript">
-(function (d,t){
-  const v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-  v.onload = () => {
-      if (!d.getElementById('root')){
-          const r = d.createElement('div');
-          r.id = 'root'; d.body.appendChild(r);
+  (function(d, t) {
+    var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+    v.onload = function() {
+      if (!document.getElementById('root')) {
+        var root = d.createElement('div');
+        root.id = 'root';
+        d.body.appendChild(root);
       }
-      if (window.myChatWidget?.load){
-          window.myChatWidget.load({id:'f665192d-e4cb-4f76-9929-41747024b103'});
+      if (window.myChatWidget && typeof window.myChatWidget.load === 'function') {
+        window.myChatWidget.load({
+          id: 'f665192d-e4cb-4f76-9929-41747024b103',
+        });
       }
-  };
-  v.src="https://agentivehub.com/production.bundle.min.js"; v.type="text/javascript";
-  s.parentNode.insertBefore(v,s);
-})(document,'script');
+    };
+    v.src = "https://agentivehub.com/production.bundle.min.js";
+    v.type = "text/javascript";
+    s.parentNode.insertBefore(v, s);
+  })(document, 'script');
 </script>
-
-<!-- ▸ quota-guard (paste *immediately* after the loader) -->
-<!-- ▸ quota-guard (DOM-observer version) -->
-<!-- ▸ quota-guard (cross-origin safe)  -->
-<script>
-(() => {
-  /* ===== CONFIG ===== */
-  const TOTAL_MSG_MONTH = 200;                         // workspace quota
-  const WARN_AT         = 5;                           // toast when this many left
-  const KEY = "lexai_chat_" + new Date().toISOString().slice(0,7); // yyyy-MM
-
-  let USER_LIMIT_MONTH  = 40;                          // fallback
-  let used              = +localStorage.getItem(KEY) || 0;
-
-  /* --- fetch user count once --- */
-  fetch("https://lex-ai.duckdns.org/stats/users")
-    .then(r => r.json())
-    .then(({count}) => {
-      if (Number.isFinite(count) && count>0)
-        USER_LIMIT_MONTH = Math.floor(TOTAL_MSG_MONTH / count);
-      if (used >= USER_LIMIT_MONTH) lockWidget();
-    })
-    .catch(() => {/* ignore network fail */});
-
-  /* --- helper to grey-out launcher --- */
-  const launcherSel = "button[id^='agentive-launcher']";
-  function lockWidget(){
-     const btn = document.querySelector(launcherSel);
-     if(btn){
-       btn.style.opacity = .35;
-       btn.style.pointerEvents = "none";
-       btn.title = "Monthly chat quota reached";
-     }
-  }
-  if (used >= USER_LIMIT_MONTH) lockWidget();
-
-  /* ===== attach click listener once the button appears ============== */
-  const poll = setInterval(() => {
-     const btn = document.querySelector(launcherSel);
-     if(!btn) return;                 // launcher not yet in DOM
-
-     clearInterval(poll);
-
-     btn.addEventListener("click", () => {
-        if (used >= USER_LIMIT_MONTH){
-           lockWidget();
-           alert("⚠️  Monthly chat quota reached ("+USER_LIMIT_MONTH+")");
-           return;
-        }
-
-        /* count this click as 1 message */
-        used++;
-        try { localStorage.setItem(KEY, used); } catch{}
-
-        const left = USER_LIMIT_MONTH - used;
-        if (left === 0){
-           lockWidget();
-           alert("⚠️  You’ve used the last chat message for this month.");
-        } else if (left === WARN_AT){
-           toast("Only "+left+" chat messages left this month");
-        }
-     }, {once:false});
-  }, 300);
-
-  /* tiny toast */
-  function toast(msg){
-     const n = Object.assign(document.createElement("div"), {textContent: msg});
-     Object.assign(n.style,{
-       position:"fixed",left:"50%",bottom:"24px",transform:"translateX(-50%)",
-       background:"#ffb703",color:"#0b0d19",padding:"10px 16px",
-       borderRadius:"6px",font:"600 14px Poppins,sans-serif",zIndex:9999,
-       boxShadow:"0 3px 10px rgba(0,0,0,.15)"
-     });
-     document.body.appendChild(n);
-     setTimeout(()=>n.remove(),3500);
-  }
-})();
-</script>
+  
 <span id="chatHint" class="chat-hint">Ask&nbsp;me&nbsp;anything</span>
 </body>
 </html>
