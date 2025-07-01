@@ -529,111 +529,122 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 <!-- ▸ quota-guard (paste *immediately* after the loader) -->
 <script>
 (() => {
-  /* ===== CONFIG ==================================================== */
-  const TOTAL_MSG_MONTH = 200;                // workspace quota
-  const WARN_AT         = 5;                  // show toast when this many left
-  const KEY             = "lexai_chat_" + new Date().toISOString().slice(0,7);
+  /* === CONFIG & helpers (unchanged) =============================== */
+  const TOTAL_MSG_MONTH = 200;
+  const WARN_AT = 5;
+  const KEY = "lexai_chat_" + new Date().toISOString().slice(0, 7);
 
-  let USER_LIMIT_MONTH  = 40;                 // fallback until /stats/users replies
-  let used              = +localStorage.getItem(KEY) || 0;
+  let USER_LIMIT_MONTH = 40;
+  let used = +localStorage.getItem(KEY) || 0;
 
-  /* ----  ask backend how many signed-up users we have  -------------- */
-  fetch("https://lex-ai.duckdns.org/stats/users")
-      .then(r => r.json()).then(({count})=>{
-          if (Number.isFinite(count) && count>0)
-              USER_LIMIT_MONTH = Math.floor(TOTAL_MSG_MONTH / count);
-      }).catch(() => { /* keep fallback */ });
-
-  /* ----  little helper ---------------------------------------------- */
+  const log = (...a) => console.log("[quota-guard]", ...a);
   const launcherSel = "button[id^='agentive-launcher']";
-  function lockWidget(){
-      const btn = document.querySelector(launcherSel);
-      if(btn){
-          btn.style.opacity = .35;
-          btn.style.pointerEvents = "none";
-          btn.title = "Monthly chat quota reached";
-      }
-  }
+  const lockWidget = () => {
+    const btn = document.querySelector(launcherSel);
+    if (btn) {
+      btn.style.opacity = 0.35;
+      btn.style.pointerEvents = "none";
+      btn.title = "Monthly chat quota reached";
+    }
+  };
   if (used >= USER_LIMIT_MONTH) lockWidget();
 
-  /* =====  Wait until the widget object is fully ready  ============== */
- const log = (...a)=>console.log('[quota-guard]',...a);
+  /* --- ask backend for user count --------------------------------- */
+  fetch("https://lex-ai.duckdns.org/stats/users")
+    .then(r => r.json())
+    .then(({ count }) => {
+      if (Number.isFinite(count) && count > 0) {
+        USER_LIMIT_MONTH = Math.floor(TOTAL_MSG_MONTH / count);
+        log("user count =", count, "→ per-user cap =", USER_LIMIT_MONTH);
+        if (used >= USER_LIMIT_MONTH) lockWidget();
+      }
+    })
+    .catch(() => log("could not fetch /stats/users — using fallback"));
 
+  /* === wait for widget ============================================ */
   const ready = setInterval(() => {
     const w = window.myChatWidget;
-    log('poll – widget =', !!w, ' .on =', w?.on);
+    log("poll – widget:", !!w, "on():", typeof w?.on);
 
-    if (!w || typeof w.on !== "function") return;   // still not ready
+    if (!w || typeof w.on !== "function") return; // not ready yet
     clearInterval(ready);
-    log('widget ready, hooking…');
+    log("widget ready, attempting hooks…");
 
     const tried = [];
 
-    function tryAttach(evt){
+    function tryAttach(evt) {
       tried.push(evt);
-      try{
+      try {
         w.on(evt, handleSend);
-        log('attached via', evt);
+        log("✅ attached via", evt);
         return true;
-      }catch(err){
-        log('event', evt, 'failed →', err.message);
+      } catch (err) {
+        log("⛔", evt, "failed –", err.message);
         return false;
       }
     }
 
-    if ( tryAttach("chat:send") ) return;
-    if ( tryAttach("beforeSend") ) return;
+    if (tryAttach("chat:send")) return;
+    if (tryAttach("beforeSend")) return;
 
-    /* final fallback – DOM CustomEvents */
-    ["chat:send","beforeSend","agentive:beforeSend"].forEach(evt=>{
-      window.addEventListener(evt, ()=>{log('DOM event',evt); handleSend();});
+    /* ----- DOM-level fallback ------------------------------------ */
+    ["chat:send", "beforeSend", "agentive:beforeSend"].forEach(evt => {
+      window.addEventListener(evt, () => {
+        log("DOM event", evt);
+        handleSend();
+      });
     });
-    log('using DOM fallback for', tried);
+    log("using DOM fallback; events tried:", tried);
   }, 400);
 
-  function handleSend(){
-    try{
-      used++;
-      localStorage.setItem(KEY, used);
-      log('send → used =',used,'/ limit',USER_LIMIT_MONTH);
-    }catch(e){
-      log('localStorage write failed:', e);
+  /* === handler ===================================================== */
+  function handleSend() {
+    if (used >= USER_LIMIT_MONTH) {
+      lockWidget();
+      alert(
+        "⚠️  Monthly chat quota reached (" + USER_LIMIT_MONTH + " messages)."
+      );
+      return;
     }
 
-  /* =====  In-flight check before allowing the send  ================= */
-  function handleSend(_){
-      if (used >= USER_LIMIT_MONTH){
-          lockWidget();
-          alert("⚠️  Monthly chat quota reached ("+USER_LIMIT_MONTH+" messages).");
-          return;                       // swallow
-      }
-
-      used++;
+    used++;
+    try {
       localStorage.setItem(KEY, used);
+    } catch (e) {
+      log("localStorage write failed:", e);
+    }
+    log("send → used", used, "/", USER_LIMIT_MONTH);
 
-      const left = USER_LIMIT_MONTH - used;
-      if (left === 0){
-          lockWidget();
-          alert("⚠️  You’ve used the last chat message for this month.");
-      } else if (left === WARN_AT){
-          toast("Only "+left+" chat messages left this month");
-      }
+    const left = USER_LIMIT_MONTH - used;
+    if (left === 0) {
+      lockWidget();
+      alert("⚠️  You’ve used the last chat message for this month.");
+    } else if (left === WARN_AT) {
+      toast("Only " + left + " chat messages left this month");
+    }
   }
 
-  /* tiny green toast reused elsewhere */
-  function toast(msg){
-      const n = document.createElement("div");
-      n.textContent = msg;
-      Object.assign(n.style,{
-          position:"fixed",left:"50%",bottom:"24px",transform:"translateX(-50%)",
-          background:"#ffb703",color:"#0b0d19",padding:"10px 16px",
-          borderRadius:"6px",font:"600 14px Poppins,sans-serif",
-          zIndex:9999,boxShadow:"0 3px 10px rgba(0,0,0,.15)"
-      });
-      document.body.appendChild(n);
-      setTimeout(()=>n.remove(),3500);
+  /* tiny toast */
+  function toast(msg) {
+    const n = document.createElement("div");
+    Object.assign(n.style, {
+      position: "fixed",
+      left: "50%",
+      bottom: "24px",
+      transform: "translateX(-50%)",
+      background: "#ffb703",
+      color: "#0b0d19",
+      padding: "10px 16px",
+      borderRadius: "6px",
+      font: "600 14px Poppins,sans-serif",
+      zIndex: 9999,
+      boxShadow: "0 3px 10px rgba(0,0,0,.15)"
+    });
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3500);
   }
-}();
+})();
 </script>
 <span id="chatHint" class="chat-hint">Ask&nbsp;me&nbsp;anything</span>
 </body>
