@@ -557,23 +557,48 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   if (used >= USER_LIMIT_MONTH) lockWidget();
 
   /* =====  Wait until the widget object is fully ready  ============== */
+ const log = (...a)=>console.log('[quota-guard]',...a);
+
   const ready = setInterval(() => {
     const w = window.myChatWidget;
-    if (!w || typeof w.on !== "function") return;   // not ready yet
+    log('poll – widget =', !!w, ' .on =', w?.on);
+
+    if (!w || typeof w.on !== "function") return;   // still not ready
     clearInterval(ready);
+    log('widget ready, hooking…');
 
-    const attach = evt => {
-      try { w.on(evt, handleSend); return true; } catch { return false; }
-    };
+    const tried = [];
 
-    // try newest name first, then older ones, then DOM-level event
-    if (attach("chat:send") || attach("beforeSend")) return;
+    function tryAttach(evt){
+      tried.push(evt);
+      try{
+        w.on(evt, handleSend);
+        log('attached via', evt);
+        return true;
+      }catch(err){
+        log('event', evt, 'failed →', err.message);
+        return false;
+      }
+    }
 
-    /* --- ultimate fallback: listen for CustomEvents bubbling on window ---- */
-    window.addEventListener("chat:send",   () => handleSend());
-    window.addEventListener("beforeSend",  () => handleSend());
-    window.addEventListener("agentive:beforeSend", () => handleSend());
-  }, 350);
+    if ( tryAttach("chat:send") ) return;
+    if ( tryAttach("beforeSend") ) return;
+
+    /* final fallback – DOM CustomEvents */
+    ["chat:send","beforeSend","agentive:beforeSend"].forEach(evt=>{
+      window.addEventListener(evt, ()=>{log('DOM event',evt); handleSend();});
+    });
+    log('using DOM fallback for', tried);
+  }, 400);
+
+  function handleSend(){
+    try{
+      used++;
+      localStorage.setItem(KEY, used);
+      log('send → used =',used,'/ limit',USER_LIMIT_MONTH);
+    }catch(e){
+      log('localStorage write failed:', e);
+    }
 
   /* =====  In-flight check before allowing the send  ================= */
   function handleSend(_){
