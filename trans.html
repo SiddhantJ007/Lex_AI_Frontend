@@ -558,25 +558,22 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 
   /* =====  Wait until the widget object is fully ready  ============== */
   const ready = setInterval(() => {
-      const w = window.myChatWidget;
-      if (!w || !w.on){ return; }     // not ready yet
+    const w = window.myChatWidget;
+    if (!w || typeof w.on !== "function") return;   // not ready yet
+    clearInterval(ready);
 
-      clearInterval(ready);
+    const attach = evt => {
+      try { w.on(evt, handleSend); return true; } catch { return false; }
+    };
 
-      /* ------------ preferred hook (current build) ------------------ */
-      let hookAttached = false;
-      if (typeof w.on === "function"){
-          try{
-              w.on("chat:send", handleSend);   //  ← Agentive June-2025 event name
-              hookAttached = true;
-          }catch{/* ignore if event not recognised */}
-      }
+    // try newest name first, then older ones, then DOM-level event
+    if (attach("chat:send") || attach("beforeSend")) return;
 
-      /* ------------ fallback: window-level CustomEvent --------------- */
-      if (!hookAttached){
-          window.addEventListener("chat:send", e => handleSend(e.detail));
-      }
-  }, 400);
+    /* --- ultimate fallback: listen for CustomEvents bubbling on window ---- */
+    window.addEventListener("chat:send",   () => handleSend());
+    window.addEventListener("beforeSend",  () => handleSend());
+    window.addEventListener("agentive:beforeSend", () => handleSend());
+  }, 350);
 
   /* =====  In-flight check before allowing the send  ================= */
   function handleSend(_){
