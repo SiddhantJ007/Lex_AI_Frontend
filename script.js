@@ -1,4 +1,4 @@
-const backendUrl = "https://lex-ai.duckdns.org";
+const backendUrl = "//api.lexai.work";
 const authToken = localStorage.getItem("lexai_token");
 let dt = null;
 let includeVariants = false;
