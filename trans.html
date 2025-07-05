@@ -538,7 +538,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   const token = localStorage.getItem("lexai_token");
   if (!token) return;                        // not signed-in
 
-  const me = await fetch("https://lex-ai.duckdns.org/me", {
+  const me = await fetch("https://api.lexai.work/me", {
                 headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json())
                 .catch(()=>null);
   if (!me?.is_admin) return;                 // regular user → stop
@@ -579,7 +579,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   wrap.querySelector("#viewUsers").onclick = async e=>{
       e.preventDefault();  menuList.style.display="none";
       try{
-          const {count} = await fetch("https://lex-ai.duckdns.org/stats/users")
+          const {count} = await fetch("https://api.lexai.work/stats/users")
                                 .then(r=>r.json());
           alert("Current registered users: "+count);
       }catch{ alert("Could not fetch user stats."); }
