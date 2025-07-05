@@ -594,7 +594,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
           try{
               if(a.dataset.act==="users"){
                   const {count} = await apiGET("/stats/users");
-                  alert(`Current registered users: ${count}`);
+                  alert(`Current registered (non-admin) users: ${Math.max(0, count-1)}`);
               }else if(a.dataset.act==="usage"){
                   const {chars_used} = await apiGET("/stats/usage");
                   alert(`Total characters translated today: ${chars_used.toLocaleString()}`);
