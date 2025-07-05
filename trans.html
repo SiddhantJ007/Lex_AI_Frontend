@@ -552,9 +552,6 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   try{ me = await apiGET("/me"); }catch{ return; }    // not logged-in → bail
 
   if (me.is_admin){
-      /* hide quota pill (front-end only, back-end already ignores) */
-      document.querySelector(".quota-wrap")?.remove();
-
       /* build dropdown ----------------------------------------- */
       const navCtas = document.querySelector(".nav-ctas");
       if(!navCtas) return;
@@ -603,8 +600,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
       });
 
   }else{
-      // non-admin → keep normal quota flow
-      refreshQuota?.();
+      return;
   }
 })();
 </script>
