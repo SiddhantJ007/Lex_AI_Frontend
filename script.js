@@ -251,7 +251,7 @@ async function loadFeedbacks () {
       dt = $('#feedbackTable').DataTable({
         data: rows,
         columns: [
-          { title: "#" },                  // was “ID”
+          { title: "ID" },                
           { title: "Original Prompt" },
           { title: "Translated Text" },
           { title: "Language" },
