@@ -534,81 +534,96 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 
 <script>
 (async () => {
-  /* ---------- constants & helpers ------------------------------ */
   const BE    = "https://api.lexai.work";
   const token = localStorage.getItem("lexai_token") || "";
-  if (!token) return;                      // not logged-in
+  if (!token) return;
 
-  async function apiGET(path){
-      const r = await fetch(`${BE}${path}`,{
-          headers:{Authorization:`Bearer ${token}`}} );
-      if(!r.ok) throw Error(r.status);
-      return r.json();
-  }
+  const get = p => fetch(`${BE}${p}`,
+      {headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json());
 
-  /* ---------- who am I?  --------------------------------------- */
-  const me = await apiGET("/me").catch(()=>null);
+  /* ---------- who am I? ------------------------------------ */
+  const me = await get("/me").catch(()=>null);
   if (!me) return;
 
-  /* ---------- quota pill (all users) --------------------------- */
-  refreshQuota();                // Always show – even for admin
+  /* ---------- quota pill & button lock --------------------- */
+  const pill  = document.querySelector(".quota-bar");
+  const tBtn  = document.getElementById("translateBtn");   // only one place
   async function refreshQuota(){
       try{
-          const {limit, used} = await apiGET("/quota");
+          const {limit, used} = await get("/quota");
           const pct = Math.min(100, Math.round(used/limit*100));
-          const bar = document.querySelector(".quota-bar");
-          if (!bar) return;
-          bar.style.width = pct + "%";
-          bar.parentElement.title =
-              `Daily quota: ${used.toLocaleString()} / ${limit.toLocaleString()} chars`;
+          if (pill){
+              pill.style.width = pct + "%";
+              pill.parentElement.title =
+                  `Daily quota: ${used.toLocaleString()} / ${limit.toLocaleString()}`;
+          }
+          const left = limit - used;
+          if (left <= 0){
+              tBtn?.setAttribute("disabled", "true");
+          }else if (left <= 200){          // WARN_REMAINING_CHARS
+              toast(`⚠️ Only ${left} chars left today`);
+          }
       }catch{/* ignore */}
   }
+  refreshQuota();
 
-  /* ---------- admin drop-down ---------------------------------- */
-  if (!me.is_admin) return;              // normal user done
+  /* ---------- admin menu (same 2 items) -------------------- */
+  if (me.is_admin){
+      // quota pill stays visible but NOT disabled for admin
+      // (admin counts like normal user now)
 
-  const navCtas = document.querySelector(".nav-ctas");
-  if (!navCtas) return;
+      const nav = document.querySelector(".nav-ctas");
+      nav.insertAdjacentHTML("afterbegin",`
+         <div id="adminWrap" style="position:relative">
+           <button id="adminBtn" class="btn-cta secondary-btn"
+                   style="padding:.45rem 1.2rem;font-size:.85rem">Admin ▾</button>
+           <ul id="adminMenu" style="
+                position:absolute;right:0;top:110%;min-width:180px;display:none;
+                list-style:none;background:#fff;border:1px solid #e3e6ea;
+                border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.08);
+                padding:.4rem 0;z-index:9999">
+             <li><a href="#" data-act="users"
+                    style="display:block;padding:.55rem 1rem;font:.9rem Poppins,sans-serif;
+                           color:#0b0d19;text-decoration:none">👥 User count</a></li>
+             <li><a href="#" data-act="usage"
+                    style="display:block;padding:.55rem 1rem;font:.9rem Poppins,sans-serif;
+                           color:#0b0d19;text-decoration:none">📊 Usage today</a></li>
+           </ul>
+         </div>`);
 
-  navCtas.insertAdjacentHTML("afterbegin", `
-    <div id="adminWrap" style="position:relative">
-      <button id="adminBtn" class="btn-cta secondary-btn"
-              style="padding:.45rem 1.2rem;font-size:.85rem">Admin ▾</button>
-      <ul id="adminMenu" style="
-          position:absolute;right:0;top:110%;min-width:180px;display:none;
-          list-style:none;background:#fff;border:1px solid #e3e6ea;
-          border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.08);padding:.4rem 0;z-index:9999">
-        <li><a href="#" data-act="users"
-               style="display:block;padding:.55rem 1rem;font:.9rem Poppins,sans-serif;
-                      color:#0b0d19;text-decoration:none">👥 User count</a></li>
-        <li><a href="#" data-act="usage"
-               style="display:block;padding:.55rem 1rem;font:.9rem Poppins,sans-serif;
-                      color:#0b0d19;text-decoration:none">📊 Usage today</a></li>
-      </ul>
-    </div>`);
+      const menu = document.getElementById("adminMenu");
+      document.getElementById("adminBtn").onclick =
+          () => menu.style.display = menu.style.display==="block"?"none":"block";
+      document.addEventListener("click",e=>{
+          if(!document.getElementById("adminWrap").contains(e.target))
+              menu.style.display="none";
+      });
+      menu.addEventListener("click", async e=>{
+          e.preventDefault(); menu.style.display="none";
+          const a = e.target.closest("a"); if(!a) return;
+          try{
+              if (a.dataset.act==="users"){
+                  const {count} = await get("/stats/users");
+                  alert(`Current registered users: ${count}`);
+              }else{
+                  const {chars_used} = await get("/stats/usage");
+                  alert(`Total characters translated today: ${chars_used.toLocaleString()}`);
+              }
+          }catch{ alert("Could not fetch admin stats."); }
+      });
+  }
 
-  const menu = document.getElementById("adminMenu");
-  document.getElementById("adminBtn").onclick = () =>
-      menu.style.display = menu.style.display==="block" ? "none" : "block";
-
-  document.addEventListener("click",e=>{
-      if(!document.getElementById("adminWrap").contains(e.target))
-          menu.style.display="none";
-  });
-
-  menu.addEventListener("click", async ev=>{
-      ev.preventDefault();  menu.style.display="none";
-      const a = ev.target.closest("a"); if(!a) return;
-      try{
-          if (a.dataset.act==="users"){
-              const {count} = await apiGET("/stats/users");
-              alert(`Current registered users: ${count}`);
-          }else if (a.dataset.act==="usage"){
-              const {chars_used} = await apiGET("/stats/usage");
-              alert(`Total characters translated today: ${chars_used.toLocaleString()}`);
-          }
-      }catch{ alert("Could not fetch admin stats."); }
-  });
+  /* ---------- tiny toast ---------------------------------- */
+  function toast(msg){
+      const n = document.createElement("div");
+      n.textContent = msg;
+      Object.assign(n.style,{
+          position:"fixed",left:"50%",bottom:"24px",transform:"translateX(-50%)",
+          background:"#ffb703",color:"#0b0d19",padding:"10px 16px",
+          borderRadius:"6px",font:"600 14px Poppins,sans-serif",
+          zIndex:9999,boxShadow:"0 3px 10px rgba(0,0,0,.15)"});
+      document.body.appendChild(n); setTimeout(()=>n.remove(),3500);
+  }
 })();
 </script>
 </body>
