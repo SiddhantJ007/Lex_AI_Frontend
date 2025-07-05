@@ -15,35 +15,38 @@ async function refreshQuota(){
   if(!token) return;
 
   try{
-    const res  = await fetch(`${backendUrl}/quota`, {
-                  headers:{ Authorization:`Bearer ${token}` }
-                });
-    if(!res.ok) throw 0;
-    const {limit, used} = await res.json();
+    const r = await fetch(`${backendUrl}/quota`, {
+                headers:{Authorization:`Bearer ${token}`}});
+    if(!r.ok) throw 0;
 
-    const pct   = Math.min(100, Math.round(used/limit*100));
-    const bar   = document.getElementById("quotaBar");
-    const wrap  = document.getElementById("quotaWrap");
+    const {limit, used} = await r.json();        // back-end value
+    const HARD_CAP  = 3500;                      // absolute max
+    const WARN_LEFT = 200;
 
-    bar.style.width = pct + "%";
-    wrap.title      = `Daily quota: ${used.toLocaleString()} / ${limit.toLocaleString()} chars`;
+    const max  = Math.min(limit, HARD_CAP);      // 3 500 or lower
+    const pct  = Math.min(100, Math.round(used / max * 100));
+    const left = Math.max(0, max - used);
 
-    /* soft alert once */
-    if(pct >= 85 && !window._quotaWarned){
-      toast(`⚠️ ${(limit-used).toLocaleString()} characters left today`);
-      window._quotaWarned = true;
+    const bar  = document.getElementById("quotaBar");
+    const wrap = document.getElementById("quotaWrap");
+    if (bar && wrap){
+      bar.style.width = pct + "%";
+      wrap.title = `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars`;
     }
 
-    /* hard lock */
-    if(pct >= 100){
-      document.querySelectorAll("button.primary-btn")
-              .forEach(b=>b.disabled=true);
+    /* warn / lock */
+    if (left === 0){
+      document.querySelectorAll("button.primary-btn").forEach(b=>b.disabled=true);
       if(!window._quotaLocked){
-        alert("Daily quota reached — back tomorrow!");
+        lexAlert?.("Daily quota reached — back tomorrow!") ?? alert("Daily quota reached.");
         window._quotaLocked = true;
       }
+    }else if (left <= WARN_LEFT && !window._quotaWarned){
+      lexAlert?.(`⚠️  Only ${left.toLocaleString()} characters left today`) ??
+                 alert(`Only ${left.toLocaleString()} characters left today`);
+      window._quotaWarned = true;
     }
-  }catch{/* quietly ignore if backend down */}
+  }catch{/* silent */}
 }
 
 (async ()=>{
