@@ -570,39 +570,47 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   if (!me) return;
 
   /* ===== quota pill ================================================= */
-  const pill = document.querySelector(".quota-bar");
-  const tBtn = document.getElementById("translateBtn");
-
+  const pill  = document.querySelector(".quota-bar");
+  const tBtn  = document.getElementById("translateBtn");
+  
   async function refreshQuota(){
     try{
-      const {limit, used} = await get("/quota");
-      const max  = Math.min(limit, HARD_CAP);
+      const {limit, used} = await get("/quota");    // dynamic back-end limit
+      const HARD_CAP       = 3500;                  // never show / allow above this
+      const WARN_LEFT      = 200;                   // toast threshold
+  
+      const max  = Math.min(limit, HARD_CAP);       // final per-user cap
       const pct  = Math.min(100, Math.round(used / max * 100));
       const left = Math.max(0, max - used);
-
-      /* pill width + title */
+  
+      /* ── pill width & tooltip ─────────────────────────────── */
       if (pill){
         pill.style.width = pct + "%";
         pill.parentElement.title =
           `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars`;
-
-        /* one-time caption */
+  
+        /* persistent “3 500 / day” style label (adds once) */
         if (!document.getElementById("quotaLbl")){
           const lbl = document.createElement("span");
           lbl.id = "quotaLbl";
           lbl.textContent = `${max.toLocaleString()} / day`;
           lbl.style.cssText = "font-size:.75rem;margin-left:6px;";
           pill.parentElement.appendChild(lbl);
+        }else{
+          document.getElementById("quotaLbl").textContent =
+            `${max.toLocaleString()} / day`;        // update if max changed
         }
       }
-
-      /* disable / warn */
+  
+      /* ── disable button / warn user ───────────────────────── */
       if (left === 0){
         tBtn?.setAttribute("disabled","true");
       }else if (left <= WARN_LEFT){
-        toast(`⚠️ Only ${left.toLocaleString()} chars left today`);
+        lexAlert
+          ? lexAlert(`⚠️  Only ${left.toLocaleString()} characters left today.`)
+          : alert(`Only ${left.toLocaleString()} characters left today.`);
       }
-    }catch{/* network fail – silent */}
+    }catch{/* network failure → ignore silently */}
   }
   refreshQuota();
 
