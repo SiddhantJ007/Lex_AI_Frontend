@@ -541,8 +541,12 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   const me = await fetch("https://api.lexai.work/me", {
                 headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json())
                 .catch(()=>null);
-  if (!me?.is_admin) return;                 // regular user → stop
-
+ if (me.is_admin){
+    document.querySelector(".quota-wrap")?.remove();         
+  }else{
+    return; 
+  }
+  
   /* ---------- inject “Admin” menu into nav ------------------------- */
   const navCtas = document.querySelector(".nav-ctas");
   if (!navCtas) return;
