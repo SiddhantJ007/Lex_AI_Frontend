@@ -589,17 +589,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
         pill.parentElement.title =
           `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars`;
   
-        /* persistent “3 500 / day” style label (adds once) */
-        if (!document.getElementById("quotaLbl")){
-          const lbl = document.createElement("span");
-          lbl.id = "quotaLbl";
-          lbl.textContent = `${max.toLocaleString()} / day`;
-          lbl.style.cssText = "font-size:.75rem;margin-left:6px;";
-          pill.parentElement.appendChild(lbl);
-        }else{
-          document.getElementById("quotaLbl").textContent =
-            `${max.toLocaleString()} / day`;        // update if max changed
-        }
+        document.getElementById("quotaLbl")?.remove();
       }
   
       /* ── disable button / warn user ───────────────────────── */
