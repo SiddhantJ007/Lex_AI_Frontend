@@ -531,5 +531,60 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 </script>
   
 <span id="chatHint" class="chat-hint">Ask&nbsp;me&nbsp;anything</span>
+
+<!-- ▸ admin-extras.js  (add just before </body>) -->
+<script>
+(async () => {
+  const token = localStorage.getItem("lexai_token");
+  if (!token) return;                        // not signed-in
+
+  const me = await fetch("https://lex-ai.duckdns.org/me", {
+                headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json())
+                .catch(()=>null);
+  if (!me?.is_admin) return;                 // regular user → stop
+
+  /* ---------- inject “Admin” menu into nav ------------------------- */
+  const navCtas = document.querySelector(".nav-ctas");
+  if (!navCtas) return;
+
+  const wrap = document.createElement("div");
+  wrap.style.position = "relative";
+
+  wrap.innerHTML = `
+    <button id="adminMenuBtn" class="btn-cta secondary-btn"
+            style="padding:.45rem 1.2rem;font-size:.85rem">Admin ▾</button>
+    <ul id="adminMenu" style="
+        position:absolute;right:0;top:110%;list-style:none;
+        background:#fff;border:1px solid #e3e6ea;border-radius:8px;
+        box-shadow:0 4px 10px rgba(0,0,0,.08);padding:.4rem 0;
+        display:none;min-width:160px;z-index:9999">
+      <li><a href="#" id="viewUsers"
+             style="display:block;padding:.55rem 1rem;font:.9rem Poppins,sans-serif;
+                    color:#0b0d19;text-decoration:none">👥 User count</a></li>
+      <!-- add more <li>…</li> here later -->
+    </ul>`;
+  navCtas.prepend(wrap);
+
+  /* dropdown show/hide */
+  const menuBtn  = wrap.querySelector("#adminMenuBtn");
+  const menuList = wrap.querySelector("#adminMenu");
+  menuBtn.onclick = () => {
+      menuList.style.display = (menuList.style.display==="block")?"none":"block";
+  };
+  document.addEventListener("click",e=>{
+      if(!wrap.contains(e.target)) menuList.style.display="none";
+  });
+
+  /* --- action: view total users ----------------------------------- */
+  wrap.querySelector("#viewUsers").onclick = async e=>{
+      e.preventDefault();  menuList.style.display="none";
+      try{
+          const {count} = await fetch("https://lex-ai.duckdns.org/stats/users")
+                                .then(r=>r.json());
+          alert("Current registered users: "+count);
+      }catch{ alert("Could not fetch user stats."); }
+  };
+})();
+</script>
 </body>
 </html>
