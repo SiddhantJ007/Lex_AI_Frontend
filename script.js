@@ -1,4 +1,5 @@
-const backendUrl = "//api.lexai.work";
+const backendUrl = "https://api.lexai.work";
+
 const authToken = localStorage.getItem("lexai_token");
 let dt = null;
 let includeVariants = false;
