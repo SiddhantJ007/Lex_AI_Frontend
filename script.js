@@ -19,14 +19,18 @@ async function refreshQuota(){
                 headers:{Authorization:`Bearer ${token}`}});
     if(!r.ok) throw 0;
 
-    const {limit, used} = await r.json();        // back-end value
-    const HARD_CAP  = 3500;                      // absolute max
-    const WARN_LEFT = 2500;
+    const {limit, used} = await r.json();   // ← backend value (never > 3 500)
+    const HARD_CAP  = 3_500;                // absolute ceiling
+    const WARN_LEFT = 300;                  // toast when ≤ 300 left
 
-    const max  = Math.min(limit, HARD_CAP);      // 3 500 or lower
-    const pct  = Math.min(100, Math.round(used / max * 100));
+    const max  = Math.min(limit, HARD_CAP);
     const left = Math.max(0, max - used);
+    const pct  = Math.min(100, Math.round(used / max * 100));
 
+    /* remember for canTranslate() */
+    window._quotaLeft = left;               // << NEW >>
+
+    /* pill UI ------------------------------------------------------ */
     const bar  = document.getElementById("quotaBar");
     const wrap = document.getElementById("quotaWrap");
     if (bar && wrap){
@@ -34,20 +38,20 @@ async function refreshQuota(){
       wrap.title = `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars`;
     }
 
-    /* warn / lock */
+    /* warn / lock -------------------------------------------------- */
     if (left === 0){
       document.querySelectorAll("button.primary-btn").forEach(b=>b.disabled=true);
       if(!window._quotaLocked){
-        lexAlert?.("Daily quota reached — back tomorrow!") ?? alert("Daily quota reached.");
+        (window.lexAlert ?? alert)("Daily quota reached — back tomorrow!");
         window._quotaLocked = true;
       }
     }else if (left <= WARN_LEFT && !window._quotaWarned){
-      lexAlert?.(`⚠️  Only ${left.toLocaleString()} characters left today`) ??
-                 alert(`Only ${left.toLocaleString()} characters left today`);
+      (window.lexAlert ?? alert)(`⚠️  Only ${left.toLocaleString()} characters left today`);
       window._quotaWarned = true;
     }
-  }catch{/* silent */}
+  }catch{/* ignore network failure */}
 }
+refreshQuota();             
 
 (async ()=>{
   const t = localStorage.getItem("lexai_token");
@@ -280,14 +284,29 @@ async function loadFeedbacks () {
   document.getElementById('variantsChk').onchange = loadFeedbacks;
   document.getElementById('filterSelect').onchange = applyFeedbackFilter;
 
+  function canTranslate(txt){
+    // ~2× expansion English→other lang (tweak if needed)
+    const estimate = txt.length * 2;
+    return estimate <= (window._quotaLeft ?? 0);
+  }
+  
   /* =========== GET TRANSLATION ============================ */
 document.getElementById("translateBtn").onclick = async (e) => {
   e.preventDefault();
 
   const mode   = document.querySelector('input[name="mode"]:checked')?.value || "translate";
   const prompt = document.getElementById("prompt").value.trim();
-  if (!prompt) return alert("Enter tagline first!");
+  if (!prompt) return lexAlert?.("Enter tagline first!") ?? alert("Enter tagline first!");
 
+  /* new early-out -------------------------------------------------- */
+  if (!canTranslate(prompt)){
+    (window.lexAlert ?? alert)(
+      "That text is too long for today’s remaining quota. "
+    + "Try a shorter prompt or come back tomorrow."
+    );
+    return;
+  }
+  
   /* ---------- decide destination language ---------------- */
   let target, targetName;
 
