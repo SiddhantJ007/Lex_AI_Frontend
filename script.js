@@ -21,7 +21,7 @@ async function refreshQuota(){
 
     const {limit, used} = await r.json();        // back-end value
     const HARD_CAP  = 3500;                      // absolute max
-    const WARN_LEFT = 200;
+    const WARN_LEFT = 2500;
 
     const max  = Math.min(limit, HARD_CAP);      // 3 500 or lower
     const pct  = Math.min(100, Math.round(used / max * 100));
