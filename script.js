@@ -20,7 +20,7 @@ async function refreshQuota(){
     if(!r.ok) throw 0;
 
     const {limit, used} = await r.json();   // ← backend value (never > 3 500)
-    const HARD_CAP  = 3_500;                // absolute ceiling
+    const HARD_CAP  = 5_000;                // absolute ceiling
     const WARN_LEFT = 300;                  // toast when ≤ 300 left
 
     const max  = Math.min(limit, HARD_CAP);
