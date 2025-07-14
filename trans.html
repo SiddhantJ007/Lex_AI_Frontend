@@ -536,7 +536,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 (async () => {
   /* ===== constants & helpers ====================================== */
   const BE           = "https://api.lexai.work";
-  const HARD_CAP     = 3_500;          // never display / allow above this
+  const HARD_CAP     = 5_000;          // never display / allow above this
   const WARN_LEFT    = 200;            // toast threshold
   const token        = localStorage.getItem("lexai_token") || "";
   if (!token) return;                  // not logged-in
