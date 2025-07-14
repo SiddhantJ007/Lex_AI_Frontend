@@ -576,7 +576,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
   async function refreshQuota(){
     try{
       const {limit, used} = await get("/quota");    // dynamic back-end limit
-      const HARD_CAP       = 3500;                  // never show / allow above this
+      const HARD_CAP       = 5000;                  // never show / allow above this
       const WARN_LEFT      = 200;                   // toast threshold
   
       const max  = Math.min(limit, HARD_CAP);       // final per-user cap
