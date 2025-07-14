@@ -275,7 +275,7 @@ async function loadFeedbacks () {
 
   } catch (e) {
     console.error("loadFeedbacks failed:", e);
-    alert("Could not load feedbacks – see console.");
+    alert("Could not load feedbacks!");
   }
 }
 
@@ -383,7 +383,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
     } else {
       const err = await res.json();
       console.error(err);
-      alert("Feedback failed! See console.");
+      alert("Feedback failed!");
     }
   }
 
@@ -505,7 +505,7 @@ document.getElementById("translateBtn").onclick = async (e) => {
       alert("Done! Translation regenerated.");
     } catch (e) {
       console.error(e);
-      alert("Regeneration failed – see console.");
+      alert("Regeneration failed!");
     } finally {
       document.getElementById("spinner").classList.add("hidden");
       document.querySelectorAll("button,select,textarea,input")
