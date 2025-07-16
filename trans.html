@@ -657,11 +657,10 @@ chatbot -->
             const liveSum = data.per_user.reduce((s,r)=>s+r.used,0);
             const deleted = data.total - liveSum;
             const msg =
-        `📊  Usage for ${data.day}<br>       
-        ${body}<br>     
-        • Deleted users — ${deleted.toLocaleString()} chars<br>
-        ──────────────
-        <br>TOTAL: ${data.total.toLocaleString()} chars`;
+        `📊  Usage for ${data.day}      
+        ${body}
+        • Deleted users — ${deleted.toLocaleString()} chars
+        TOTAL: ${data.total.toLocaleString()} chars`;
             /* use innerHTML + <br> so the modal keeps line‑breaks */
             (function show(msg){
                 const box = document.getElementById("lexMsg");
