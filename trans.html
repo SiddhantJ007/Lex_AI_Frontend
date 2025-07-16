@@ -537,7 +537,7 @@ chatbot -->
 (async () => {
   /* ===== constants & helpers ====================================== */
   const BE           = "https://api.lexai.work";
-  const HARD_CAP     = 5_000;          // never display / allow above this
+  const HARD_CAP     = 10_000;          // never display / allow above this
   const WARN_LEFT    = 200;            // toast threshold
   const token        = localStorage.getItem("lexai_token") || "";
   if (!token) return;                  // not logged-in
@@ -577,7 +577,7 @@ chatbot -->
   async function refreshQuota(){
     try{
       const {limit, used} = await get("/quota");    // dynamic back-end limit
-      const HARD_CAP       = 5000;                  // never show / allow above this
+      const HARD_CAP       = 10000;                  // never show / allow above this
       const WARN_LEFT      = 200;                   // toast threshold
   
       const max  = Math.min(limit, HARD_CAP);       // final per-user cap
