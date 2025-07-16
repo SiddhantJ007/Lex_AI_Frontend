@@ -645,11 +645,21 @@ chatbot -->
               const {count} = await get("/stats/users");
               // subtract admin (assumes just one admin account)
               lexAlert(`Current registered users: ${Math.max(0, count-1)}`);
-          }else if (a.dataset.act === "usage"){
-              const {chars_used} = await get("/stats/usage");
-              lexAlert(`Total characters translated today: ${chars_used.toLocaleString()}`);
-          }
-      }catch{ lexAlert("Could not fetch admin stats."); }
+          }} else if (a.dataset.act === "usage") {
+
+    const data = await get("/stats/usage");   // {day,total,per_user:[]}
+
+    let list = data.per_user
+                .map(r => `${r.name} (${r.email}) – ${r.used.toLocaleString()} chars`)
+                .join('\n');
+
+    const msg =
+      `📊 Usage for ${data.day}\n\n` +
+      list +
+      `\n\nTOTAL: ${data.total.toLocaleString()} chars`;
+
+    lexAlert ? lexAlert(msg) : alert(msg);
+}
   });
 
 })();
