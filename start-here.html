@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexAi – Start Here</title>
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --brand-green:#00c2b5; --brand-teal:#00bfc7; --footer-bg:#0b0d19;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Poppins',sans-serif;background:#f4f6f8;color:#0b0d19;
+  display:flex;flex-direction:column;min-height:100vh
+}
+main{flex:1;max-width:880px;margin:120px auto 60px;padding:0 1rem}
+h1{font-size:2rem;font-weight:700;margin-bottom:1rem;color:var(--brand-green)}
+h2{font-size:1.35rem;font-weight:600;margin:1.6rem 0 .8rem}
+p{font-size:1.05rem;line-height:1.55}
+ol{margin:1rem 0 1.6rem 1.2rem;padding-left:.8rem}
+ol li{margin:.55rem 0;font-size:1.02rem}
+a{color:var(--brand-teal)}
+/* nav & footer reuse ------------------------------------ */
+.glass{position:fixed;top:0;left:0;width:100%;z-index:999;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.8rem 4vw;background:rgba(255,255,255,.35);backdrop-filter:blur(18px)}
+.brand{font:700 1.4rem/1 'Poppins';color:var(--brand-green);text-decoration:none}
+.nav-links{list-style:none;display:flex;gap:2.4rem}
+.nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
+.nav-item:hover{color:var(--brand-teal)}
+.btn-cta{background:var(--brand-green);color:#fff;padding:.5rem 1.4rem;border-radius:25px;
+  font-weight:600;font-size:.9rem;text-decoration:none}
+.site-footer{background:var(--footer-bg);color:#d1d1d1;padding:2rem;text-align:center;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<nav class="glass">
+  <a href="index.html" class="brand">LexAi</a>
+  <ul class="nav-links">
+    <li><a href="index.html"       class="nav-item">Home</a></li>
+    <li><a href="features.html"    class="nav-item">Features</a></li>
+    <li><a href="about.html"       class="nav-item">About</a></li>
+    <li><a href="start-here.html"  class="nav-item">Start Here</a></li>
+  </ul>
+  <a href="login.html" class="btn-cta">Log in</a>
+</nav>
+
+<main>
+  <h1>Welcome to LexAi — your multilingual A/B-testing co-pilot 🚀</h1>
+
+  <p>LexAi lets growth teams draft, translate & instantly <strong>stress-test</strong> short-form copy
+     (ads, subject lines, CTAs) in  <i>30-plus languages</i>.  
+     Under the hood we combine GPT-4o creativity with DeepL precision, then wrap it in an interface that
+     feels as quick as jotting a sticky-note.✨</p>
+
+  <h2>🎥 90-second walkthrough</h2>
+  <p>See the workflow end-to-end <a href="https://www.lexai.work/demo" target="_blank">in this video</a>.
+     Afterwards you can experiment live — free account, no card required.</p>
+
+  <h2>🔑 Create your free workspace</h2>
+  <p style="margin-bottom:.4rem">
+     Click <strong>Sign&nbsp;up</strong> (top-right) and you’ll land inside the editor in <b>&lt;10&nbsp;seconds</b>.
+     Every new user gets a sandbox with<br><b>10&nbsp;000 daily characters</b> to play with.
+  </p>
+
+  <h2>🛠 How to use LexAi in <span style="white-space:nowrap">4 simple steps</span></h2>
+  <ol>
+    <li><strong>Paste or type</strong> any short text (English or other) you want to enhance or translate.<br>
+        • Need the original language back? Choose **Rephrase (English-only)**.</li>
+
+    <li>Pick your <strong>target language</strong> or keep English and click
+        **Get Results**.  
+        LexAi instantly generates several high-impact alternatives.</li>
+
+    <li>Skim the suggestions and tag each one **Good** 👍 or **Bad** 👎.  
+        Our model learns from your feedback and surfaces stronger lines over time.</li>
+
+    <li>Click **Download → Excel** to grab a tidy file of winners & losers for
+        A/B testing in Facebook, Google Ads or email.</li>
+  </ol>
+
+  <h2>🤝 Want a personalised tour?</h2>
+  <p>Book a live 15-min session and we’ll tailor LexAi to your workflow —
+     <a href="https://calendly.com/juliengustinelli/ai-implementation-introductory-chat?month=2025-08" target="_blank">grab a slot here</a>.</p>
+</main>
+
+<footer class="site-footer">
+  © 2025 LexAi – All rights reserved
+</footer>
+</body>
+</html>
