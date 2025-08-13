@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lexai.work | The Smarter B2B Content Solution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6; /* Light Gray */
+        }
+        .hero-gradient {
+            background: linear-gradient(90deg, #134E4A 0%, #0D9488 100%); /* Teal Gradient */
+        }
+        .competitor-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #E5E7EB;
+        }
+        .feature-check {
+            font-size: 1.5rem;
+        }
+        .lexai-advantage {
+            color: #16A34A; /* Green-600 */
+        }
+        .competitor-disadvantage {
+            color: #DC2626; /* Red-600 */
+        }
+        .differentiator-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #0D9488; /* Teal-600 */
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <header class="hero-gradient text-white shadow-lg">
+        <div class="container mx-auto px-6 py-12 text-center">
+            <h1 class="text-5xl font-extrabold">Stop Overpaying for Underperforming AI.</h1>
+            <p class="text-2xl mt-4 font-light max-w-3xl mx-auto">Lexai delivers a fast, customizable, no-code content solution that scales with your business, not your headcount.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-16">
+
+        <!-- The Problem Section -->
+        <section id="problem" class="mb-20 text-center">
+            <h2 class="text-3xl font-bold text-gray-500 uppercase tracking-wider mb-4">The Enterprise Content Trap</h2>
+            <p class="text-xl text-gray-700 max-w-4xl mx-auto">Modern enterprises are caught between generic AI tools that lack brand control and legacy platforms that are slow, complex, and punish growth with cumbersome pay-per-seat pricing.</p>
+        </section>
+
+        <!-- Competitive Edge Section -->
+        <section id="competitors" class="mb-24">
+            <h2 class="text-4xl font-extrabold text-center mb-12">The Lexai Advantage</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                
+                <!-- Lexai Card -->
+                <div class="competitor-card border-2 border-teal-600 transform scale-105 shadow-2xl">
+                    <h3 class="text-3xl font-bold text-teal-700 mb-4">Lexai.work</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3">Fast, No-Code Customization</span></li>
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3">No Steep Learning Curve</span></li>
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3">Transparent, Scalable Licensing</span></li>
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3">On-Premise Security Options</span></li>
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3">Unified Content & Translation Workflow</span></li>
+                    </ul>
+                </div>
+
+                <!-- Writer.com Card -->
+                <div class="competitor-card">
+                    <h3 class="text-3xl font-bold text-gray-800 mb-4">Competitors (e.g., Writer.com)</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Complex, Slow Implementation</span></li>
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Requires Significant Training</span></li>
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Cumbersome Pay-Per-Seat Model</span></li>
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3 text-gray-600">Cloud-Based Security</span></li>
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Fragmented Tooling for Translation</span></li>
+                    </ul>
+                </div>
+
+                <!-- Generic AI Card -->
+                <div class="competitor-card">
+                    <h3 class="text-3xl font-bold text-gray-800 mb-4">Generic AI (e.g., ChatGPT)</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">No True Customization</span></li>
+                        <li class="flex items-center"><span class="feature-check lexai-advantage">✓</span><span class="ml-3 text-gray-600">Easy to Use (but lacks control)</span></li>
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Unpredictable & Not Enterprise-Ready</span></li>
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Major Data Security Risks</span></li>
+                        <li class="flex items-center"><span class="feature-check competitor-disadvantage">✗</span><span class="ml-3 text-gray-600">Completely Separate Workflows</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Market Fit Section -->
+        <section id="product-market-fit" class="mb-24 bg-white rounded-lg shadow-xl p-8 md:p-12">
+            <h2 class="text-4xl font-extrabold text-center mb-4">Engineered for Today's Enterprise Needs</h2>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto text-center mb-12">We built Lexai by focusing on the critical gaps left by other solutions: Speed, Simplicity, and Scalability.</p>
+            <div class="max-w-4xl mx-auto">
+                 <canvas id="productMarketFitChart"></canvas>
+            </div>
+        </section>
+
+
+        <!-- Differentiators Section -->
+        <section id="differentiators" class="mb-20">
+            <h2 class="text-4xl font-extrabold text-center mb-12">What Makes Lexai Different</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="differentiator-card">
+                    <p class="text-5xl mb-4">⚡</p>
+                    <h3 class="text-2xl font-bold mb-2">Fast, No-Code Solutions</h3>
+                    <p class="text-gray-600">Deploy custom content models and workflows in days, not months. Our intuitive interface means your team can build and manage solutions without writing a single line of code.</p>
+                </div>
+                <div class="differentiator-card">
+                    <p class="text-5xl mb-4">🧘</p>
+                    <h3 class="text-2xl font-bold mb-2">No Steep Learning Curve</h3>
+                    <p class="text-gray-600">Forget cumbersome training sessions. Lexai is designed for immediate adoption, empowering your team to be productive from day one and maximizing your ROI.</p>
+                </div>
+                <div class="differentiator-card">
+                    <p class="text-5xl mb-4">💸</p>
+                    <h3 class="text-2xl font-bold mb-2">No Pay-Per-Seat Model</h3>
+                    <p class="text-gray-600">Our licensing model is built for collaboration. Scale your usage across the entire organization without worrying about escalating costs for each new user.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer / CTA -->
+        <footer id="contact" class="text-center pt-16 mt-16 bg-black text-white rounded-t-lg">
+            <div class="container mx-auto px-6 pb-16">
+                <h2 class="text-4xl font-extrabold mb-4">See the Difference for Yourself.</h2>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Schedule a personalized demo to see how Lexai can revolutionize your enterprise content strategy.</p>
+                <a href="mailto:sales@lexai.work?subject=B2B Demo Request" class="bg-teal-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-teal-500 transition-transform hover:scale-105 text-xl inline-block shadow-lg">Request a B2B Demo</a>
+                <p class="text-sm text-gray-400 mt-12">&copy; 2025 Lexai.work. The Enterprise-Ready AI Solution.</p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Product Market Fit Chart
+        new Chart(document.getElementById('productMarketFitChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Speed to Deploy', 'Ease of Use', 'Scalable Pricing', 'Brand Consistency', 'Security', 'Workflow Integration'],
+                datasets: [{
+                    label: 'Lexai.work',
+                    data: [9, 9, 10, 8, 9, 10],
+                    fill: true,
+                    backgroundColor: 'rgba(13, 148, 136, 0.2)',  // Teal
+                    borderColor: 'rgba(13, 148, 136, 1)',      // Teal
+                    pointBackgroundColor: 'rgba(13, 148, 136, 1)',// Teal
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(13, 148, 136, 1)'// Teal
+                }, {
+                    label: 'Legacy Platforms',
+                    data: [3, 4, 3, 7, 8, 5],
+                    fill: true,
+                    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+                    borderColor: 'rgba(220, 38, 38, 1)',
+                    pointBackgroundColor: 'rgba(220, 38, 38, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(220, 38, 38, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                             font: { size: 14, family: "'Inter', sans-serif" },
+                             color: '#111827'
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: '#E5E7EB' },
+                        grid: { color: '#E5E7EB' },
+                        pointLabels: {
+                            font: { size: 14, family: "'Inter', sans-serif", weight: '600' },
+                            color: '#1F2937'
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: '#4B5563',
+                            stepSize: 2
+                        },
+                        min: 0,
+                        max: 10
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
