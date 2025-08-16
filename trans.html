@@ -350,6 +350,14 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
         </optgroup>
       </select>
 
+      <label for="modelSelect" style="font-weight:600;display:block;margin-top:12px">
+        Model:
+      </label>
+      <select id="modelSelect">
+        <option value="gpt-4o-mini" selected>GPT-4o mini (fast, economical)</option>
+        <option value="gpt-4o">GPT-4o (higher quality)</option>
+      </select>
+      
       <button type="submit" id="translateBtn" class="primary-btn">Get&nbsp;Results</button>
     </form>
   </section>
@@ -365,7 +373,7 @@ hr{border:0;border-top:1px solid #2a2e3a;margin:3rem 0 2rem}
 
   <!-- ===== RESULT ===== -->
   <section id="result" class="section" style="display:none">
-    <h2>Translated Text</h2>
+    <h2 id="resultTitle">Translated Text</h2>
     <p id="translatedText" style="font-weight:500"></p><br>
     <button id="copyBtn" class="primary-btn">Copy&nbsp;to&nbsp;Clipboard</button>
 
@@ -536,7 +544,7 @@ chatbot -->
   /* ===== constants & helpers ====================================== */
   const BE           = "https://api.lexai.work";
   const HARD_CAP     = 10_000;          // never display / allow above this
-  const WARN_LEFT    = 200;            // toast threshold
+  const WARN_LEFT    = 300;            // toast threshold
   const token        = localStorage.getItem("lexai_token") || "";
   if (!token) return;                  // not logged-in
 
@@ -586,7 +594,7 @@ chatbot -->
       if (pill){
         pill.style.width = pct + "%";
         pill.parentElement.title =
-          `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars`;
+          `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars — resets at midnight ET`;
   
         document.getElementById("quotaLbl")?.remove();
       }
