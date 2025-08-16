@@ -35,7 +35,7 @@ async function refreshQuota(){
     const wrap = document.getElementById("quotaWrap");
     if (bar && wrap){
       bar.style.width = pct + "%";
-      wrap.title = `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars`;
+      wrap.title = `Daily quota: ${used.toLocaleString()} / ${max.toLocaleString()} chars - resets at midnight ET`;
     }
 
     /* warn / lock -------------------------------------------------- */
@@ -321,13 +321,18 @@ document.getElementById("translateBtn").onclick = async (e) => {
     targetName  = selOpt.text;
   }
 
+  /* ---------- model selection ---------------------------- */
+  const modelSel = document.getElementById("modelSelect");
+  const model = (modelSel?.value) || "gpt-4o-mini";
+  try { localStorage.setItem("lexai_model", model); } catch {}
+  
   /* ---------- call the SAME endpoint --------------------- */
   showSpin(true);
   try {
     const res = await apiFetch(`${backendUrl}/full-process/`, {
       method : "POST",
       headers: { "Content-Type": "application/json" },
-      body   : JSON.stringify({ prompt, target_language: target })
+      body   : JSON.stringify({ prompt, target_language: target, model })
     });
     if (!res.ok) throw Error("Backend");
 
@@ -337,6 +342,10 @@ document.getElementById("translateBtn").onclick = async (e) => {
     document.getElementById("result").style.display      = "block";
     document.getElementById("resultHeading")?.scrollIntoView({ behavior: "smooth" });
 
+    /* set result title based on mode */
+    const titleEl = document.getElementById("resultTitle");
+    if (titleEl) titleEl.textContent = (mode === "rephrase" ? "Rephrased Line" : "Translated Text");
+    
     /* 👍 👎 stay available for both modes */
     document.getElementById("feedbackControls").style.display = "flex";
 
@@ -605,6 +614,25 @@ document.getElementById("logoutBtn")?.addEventListener("click", e=>{
   location.href = "login.html";
 });
 });
+
+/*---------- Restore model on load ----------------------- */
+  const savedModel = localStorage.getItem("lexai_model");
+  if (savedModel && document.getElementById("modelSelect")) {
+    document.getElementById("modelSelect").value = savedModel;
+  }
+
+  /* ---------- Keyboard shortcuts -------------------------- */
+  window.addEventListener("keydown", (ev) => {
+    const metaOrCtrl = ev.metaKey || ev.ctrlKey;
+    if (metaOrCtrl && ev.key === "Enter") {
+      ev.preventDefault();
+      document.getElementById("translateBtn")?.click();
+    }
+    if (ev.key.toLowerCase() === "r" && document.getElementById("result")?.style.display !== "none") {
+      ev.preventDefault();
+      document.getElementById("badBtn")?.click();
+    }
+  });
 
 document.addEventListener("DOMContentLoaded", () => {
   const modeRadios = document.querySelectorAll('input[name="mode"]');
