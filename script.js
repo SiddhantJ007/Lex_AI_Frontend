@@ -408,13 +408,16 @@ document.getElementById("translateBtn").onclick = async (e) => {
 
     spinnerOn("Generating ideas…");
     try {
+      const modelSel = document.getElementById("modelSelect");
+      const model = (modelSel?.value) || localStorage.getItem("lexai_model") || "gpt-4o-mini";
       const r = await apiFetch(`${backendUrl}/copy-variants/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: currentSession.original_prompt,
           target_language: currentSession.lang_code,
-          count: 5
+          count: 5,
+          model
         })
       });
       const data = await r.json();
@@ -489,12 +492,16 @@ document.getElementById("translateBtn").onclick = async (e) => {
       .forEach(el => el.disabled = true);
 
     try {
+      const modelSel = document.getElementById("modelSelect");
+      const model = (modelSel?.value) || localStorage.getItem("lexai_model") || "gpt-4o-mini";
+
       const payload = {
         user_id: getUserId(),
         original_prompt: window.currentSession.original_prompt,
         translated_text: window.currentSession.translated_text,
         target_language: window.currentSession.lang_code,
-        reason: reason
+        reason: reason,
+        model
       };
 
       const res = await apiFetch(`${backendUrl}/feedback/regenerate`, {
