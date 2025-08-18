@@ -661,14 +661,14 @@ document.getElementById("logoutBtn")?.addEventListener("click", e=>{
       ev.preventDefault();
       document.getElementById("translateBtn")?.click();
     }
-    if (ev.key.toLowerCase() === "r" && document.getElementById("result")?.style.display !== "none") {
+    /*if (ev.key.toLowerCase() === "r" && document.getElementById("result")?.style.display !== "none") {
       ev.preventDefault();
       document.getElementById("badBtn")?.click();
     }
     if (ev.key.toLowerCase() === "g" && document.getElementById("result")?.style.display !== "none") {
       ev.preventDefault();
       document.getElementById("goodBtn")?.click();
-    }
+    }*/
   });
 
 document.addEventListener("DOMContentLoaded", () => {
