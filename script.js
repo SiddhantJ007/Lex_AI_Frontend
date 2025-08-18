@@ -4,6 +4,24 @@ const authToken = localStorage.getItem("lexai_token");
 let dt = null;
 let includeVariants = false;
 
+async function ensureAuthOrRedirect() {
+  const token = localStorage.getItem("lexai_token");
+  if (!token) { location.href = "login.html"; return false; }
+  try {
+    const r = await fetch(`${backendUrl}/me`, { headers:{Authorization:`Bearer ${token}`} });
+    if (r.status === 401 || r.status === 403) {
+      localStorage.removeItem("lexai_token");
+      localStorage.removeItem("lexai_uid");
+      location.href = "login.html";
+      return false;
+    }
+    return true;
+  } catch {
+    // Network hiccup: do nothing special; page UI will show offline banner
+    return true;
+  }
+}
+
 function apiFetch(url, options = {}) {
   const heads = options.headers || {};
   if (authToken) heads["Authorization"] = `Bearer ${authToken}`;
@@ -63,6 +81,9 @@ refreshQuota();
     if(r.ok){
       const {first} = await r.json();
       document.getElementById("welcomeName").textContent = `Welcome, ${first}`;
+    }else if (r.status === 401 || r.status === 403) {
+      localStorage.removeItem("lexai_token");
+      localStorage.removeItem("lexai_uid");
     }
   }catch{ /* silent */ }
 })();
@@ -199,6 +220,11 @@ async function pingBackend() {
 /* -------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", async () => {
 
+  if (document.getElementById("getTranslationForm")) {
+    const ok = await ensureAuthOrRedirect();
+    if (!ok) return; // redirected to login
+  }
+  
   if (typeof $ === "undefined") {
     console.error("jQuery missing – LexAI UI can’t initialise.");
     return;
