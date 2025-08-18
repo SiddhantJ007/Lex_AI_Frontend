@@ -19,7 +19,7 @@ main{padding-top:100px;max-width:1100px;margin:auto}
 .nav-links{list-style:none;display:flex;gap:2.4rem;margin-left:15rem}
 .nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
 .nav-item:hover{color:var(--brand-teal)}
-.nav-ctas{display:flex;align-items:center;gap:1.3rem;margin-left:5rem}
+.nav-ctas{display:flex;align-items:center;gap:1.3rem;margin-left:auto}
 .btn-cta{background:var(--brand-green);color:#fff;padding:.55rem 1.6rem;border-radius:25px;font-weight:600;font-size:.9rem;text-decoration:none}
 
 /* sections */
@@ -69,17 +69,9 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
 </nav>
 
 <main>
-  <!-- FAQS -->
-  <section class="section">
-    <h1>Common questions</h1>
-    <div class="faq" id="faqList">
-      <!-- Injected by script -->
-    </div>
-  </section>
-  
   <!-- TICKETS -->
   <section class="section">
-    <h1>Support</h1>
+    <h1>FAQs & Support</h1>
     <p class="small">Can’t find an answer? Send us a ticket below — it goes straight to our team.</p>
     <div class="form-row" style="margin-top:16px">
       <div>
@@ -105,6 +97,14 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
       <button id="ticketSend" class="primary">Submit Ticket</button>
       <span id="ticketHint" class="small">You need to be signed in to submit a ticket.</span>
+    </div>
+  </section>
+
+  <!-- FAQS -->
+  <section class="section">
+    <h1>Common questions</h1>
+    <div class="faq" id="faqList">
+      <!-- Injected by script -->
     </div>
   </section>
 </main>
