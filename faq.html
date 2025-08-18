@@ -64,7 +64,7 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     <li><a href="faq.html" class="nav-item" style="color:var(--brand-teal)">FAQ</a></li>
   </ul>
   <div class="nav-ctas">
-    <a href="trans.html" class="btn-cta">Open App</a>
+    <a id="appCta" href="#" class="btn-cta">Open App</a>
   </div>
 </nav>
 
@@ -82,7 +82,6 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
         <label for="ticketType">Category</label>
         <select id="ticketType">
           <option>General</option>
-          <option>Billing</option>
           <option>Bug report</option>
           <option>Feature request</option>
           <option>Account</option>
@@ -186,6 +185,27 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     el.appendChild(sum); el.appendChild(p);
     list.appendChild(el);
   });
+
+  (async function setCta(){
+    const cta = document.getElementById("appCta");
+    if (!cta) return;
+    const apex = "https://lexai.work";
+    // default: sign-in
+    cta.textContent = "Sign in to App";
+    cta.href = `${apex}/login.html`;
+    if (!token) return;
+    try{
+      const r = await fetch(BE + "/me", { headers:{ Authorization:"Bearer " + token } });
+      if (r.ok) {
+        cta.textContent = "Open App";
+        cta.href = `${apex}/trans.html`;
+      } else if (r.status === 401 || r.status === 403) {
+        localStorage.removeItem("lexai_token");
+        localStorage.removeItem("lexai_uid");
+      }
+    }catch{/* stay on sign-in */}
+  })();
+
 })();
 </script>
 </body>
