@@ -11,51 +11,79 @@
 <style>
 :root{
   --brand-green:#00c2b5; --brand-teal:#00bfc7; --footer-bg:#0b0d19;
+  /* swap this to your actual hero file if you have one */
+  --hero-url: url('hero-index.jpg'); /* fallback uses gradient if file missing */
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Poppins',sans-serif;background:#f4f6f8;color:#0b0d19;
-  display:flex;flex-direction:column;min-height:100vh
-}
-main{flex:1;max-width:880px;margin:120px auto 60px;padding:0 1rem}
-h1{font-size:2rem;font-weight:700;margin-bottom:1rem;color:var(--brand-green)}
-h2{font-size:1.35rem;font-weight:600;margin:1.6rem 0 .8rem}
-p{font-size:1.05rem;line-height:1.55}
-ol{margin:1rem 0 1.6rem 1.2rem;padding-left:.8rem}
-ol li{margin:.55rem 0;font-size:1.02rem}
-a{color:var(--brand-teal)}
-/* nav & footer reuse ------------------------------------ */
-.glass{position:fixed;top:0;left:0;width:100%;z-index:999;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:.8rem 4vw;background:rgba(255,255,255,.35);backdrop-filter:blur(18px)}
+body{font-family:'Poppins',sans-serif;color:#0b0d19;background:#f4f6f8;display:flex;flex-direction:column;min-height:100vh}
+a{color:var(--brand-teal);text-decoration:none}
+main{flex:1}
+
+/* ===== keep existing nav/footer exactly as-is ===== */
+.glass{position:fixed;top:0;left:0;width:100%;z-index:999;display:flex;justify-content:space-between;align-items:center;padding:.8rem 4vw;background:rgba(255,255,255,.35);backdrop-filter:blur(18px)}
 .brand{font:700 1.4rem/1 'Poppins';color:var(--brand-green);text-decoration:none}
 .nav-links{list-style:none;display:flex;gap:2.4rem}
 .nav-item{color:#000;text-decoration:none;font-weight:500;transition:color .2s}
 .nav-item:hover{color:var(--brand-teal)}
-.btn-cta{background:var(--brand-green);color:#fff;padding:.5rem 1.4rem;border-radius:25px;
-  font-weight:600;font-size:.9rem;text-decoration:none}
+.btn-cta{background:var(--brand-green);color:#fff;padding:.5rem 1.4rem;border-radius:25px;font-weight:600;font-size:.9rem;text-decoration:none}
 .site-footer{background:var(--footer-bg);color:#d1d1d1;padding:2rem;text-align:center;font-size:.9rem}
 
-/* ===== hub cards (keeps your Poppins + brand colours) ===== */
-.hub{margin-top:2.2rem}
-.hub h2{font-size:1.45rem;font-weight:700;margin-bottom:1rem;color:#00c2b5}
-.hub-grid{
-  display:grid;gap:16px;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+/* ===== HERO ===== */
+.hero{
+  margin-top:72px; /* below glass nav */
+  min-height:64vh;
+  display:grid;place-items:center;
+  text-align:center;padding:8vh 6vw;
+  color:#fff;position:relative;overflow:hidden;
+  background:
+    linear-gradient(0deg, rgba(11,13,25,.55), rgba(11,13,25,.35)),
+    var(--hero-url), radial-gradient(60% 60% at 50% 40%, #0b0d19 0%, #131a20 100%);
+  background-size:cover; background-position:center;
 }
-.hub-card{
-  background:#fff;border:1px solid #e8ecef;border-radius:12px;
-  padding:16px;box-shadow:0 3px 12px rgba(0,0,0,.05);
+.hero h1{
+  font-size:clamp(2rem,5vw,3.3rem);
+  font-weight:800; line-height:1.12;
+  background:linear-gradient(90deg,#fff 0%,#f2fbfb 60%,#e8ffff 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 6px 28px rgba(0,0,0,.35);
 }
-.hub-card h3{font-size:1.1rem;margin-bottom:.35rem}
-.hub-card p{font-size:.97rem;color:#36414d;min-height:48px}
-.hub-cta{
-  display:inline-block;margin-top:.6rem;
-  background:linear-gradient(90deg,#00c2b5 0%,#00bfc7 100%);
-  color:#fff;text-decoration:none;padding:.5rem .9rem;border-radius:28px;
-  font-weight:600;font-size:.92rem
+.hero p{
+  font-size:clamp(1rem,2vw,1.25rem);
+  max-width:860px;margin:.9rem auto 1.6rem;opacity:.95
 }
-.hub-cta:hover{opacity:.9}
+.cta-row{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-block;border:none;border-radius:999px;cursor:pointer;
+  font-weight:700;letter-spacing:.2px;padding:.85rem 1.4rem;font-size:.98rem;
+  transition:transform .15s, box-shadow .15s, opacity .15s
+}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(90deg,#00c2b5,#00bfc7);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.45)}
+.pill{display:inline-block;margin-top:.75rem;padding:.35rem .7rem;border-radius:999px;background:rgba(255,255,255,.16);font-size:.85rem}
+
+/* ===== 3 STEPS ===== */
+.steps{max-width:1100px;margin:28px auto;padding:0 4vw;display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.step{
+  background:#fff;border:1px solid #e8ecef;border-radius:14px;padding:18px;
+  box-shadow:0 8px 22px rgba(0,0,0,.06)
+}
+.step h3{font-size:1.05rem;margin-bottom:.35rem}
+.step p{color:#36414d;font-size:.95rem}
+.step .num{display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(90deg,#00c2b5,#00bfc7);color:#fff;
+  font:700 .9rem/1 'Poppins';margin-right:.5rem}
+
+/* ===== PATHS (3 cards) ===== */
+.paths{max-width:1100px;margin:4px auto 56px;padding:0 4vw}
+.paths h2{font-size:1.35rem;font-weight:800;margin:10px 0 14px;color:#00c2b5}
+.card-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:#fff;border:1px solid #e8ecef;border-radius:14px;padding:18px;box-shadow:0 8px 22px rgba(0,0,0,.06)}
+.card h3{font-size:1.1rem;margin-bottom:.35rem}
+.card p{color:#36414d;font-size:.96rem;min-height:44px}
+.card .link{display:inline-block;margin-top:.6rem;font-weight:700}
 </style>
 </head>
 <body>
@@ -72,74 +100,51 @@ a{color:var(--brand-teal)}
 </nav>
 
 <main>
-  <h1>Welcome to LexAi — your multilingual A/B-testing co-pilot 🚀</h1>
-
-  <p>LexAi lets growth teams draft, translate & instantly <strong>stress-test</strong> short-form copy
-     (ads, subject lines, CTAs) in  <i>30-plus languages</i>.  
-     Under the hood we combine GPT-4o creativity with DeepL precision, then wrap it in an interface that
-     feels as quick as jotting a sticky-note.✨</p>
-
-  <h2>🎥 90-second walkthrough</h2>
-  <p>See the workflow end-to-end <a href="https://www.lexai.work/demo">in this video</a>.
-     Afterwards you can experiment live — free account, no card required.</p>
-
-  <h2>🔑 Create your free workspace</h2>
-  <p style="margin-bottom:.4rem">
-     Click <strong>Sign&nbsp;up</strong> (top-right) and you’ll land inside the editor in <b>&lt;10&nbsp;seconds</b>.
-     Every new user gets a sandbox with <b>10&nbsp;000 daily characters</b> to play with.
-  </p>
-
-  <h2>🛠 How to use LexAi in <span style="white-space:nowrap">4 simple steps</span></h2>
-  <ol>
-    <li><strong>Paste or type</strong> any short text (English or other) you want to enhance or translate.<br>
-        • Need the original language back? Choose **Rephrase (English-only)**.</li>
-
-    <li>Pick your <strong>target language</strong> or keep English and click
-        **Get Results**.  
-        LexAi instantly generates several high-impact alternatives.</li>
-
-    <li>Skim the suggestions and tag each one **Good** 👍 or **Bad** 👎.  
-        Our model learns from your feedback and surfaces stronger lines over time.</li>
-
-    <li>Click **Download → Excel** to grab a tidy file of winners & losers for
-        A/B testing in Facebook, Google Ads or email.</li>
-  </ol>
-
-  <!-- ===== Quick choices (Hub) ===== -->
-  <section class="hub">
-    <h2>Pick where you want to go</h2>
-    <div class="hub-grid">
-      <article class="hub-card">
-        <h3>Start creating (Free)</h3>
-        <p>Sign up and try English refine + DeepL translate. No card, daily quota included.</p>
-        <a class="hub-cta" href="signup.html">Create my free account →</a>
-      </article>
-      <article class="hub-card">
-        <h3>Compare B2C vs B2B</h3>
-        <p>See what the free tier offers vs. the enterprise path at a glance.</p>
-        <a class="hub-cta" href="contentsolutions.html">View comparison →</a>
-      </article>
-      <article class="hub-card">
-        <h3>For Teams / Enterprise</h3>
-        <p>Customization, brand voice, security & a no-seat license model.</p>
-        <a class="hub-cta" href="enterprise.html">Explore enterprise →</a>
-      </article>
-      <article class="hub-card">
-        <h3>Results & market data</h3>
-        <p>Charts, KPIs and why unifying copy + translation saves hours.</p>
-        <a class="hub-cta" href="stats.html">See the stats →</a>
-      </article>
-      <article class="hub-card">
-        <h3>Pilot program</h3>
-        <p>Limited-slot B2B pilot: custom build at near-cost in exchange for a testimonial.</p>
-        <a class="hub-cta" href="youraisolution.html">Apply now →</a>
-      </article>
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <span class="pill">No card • Free daily quota</span>
+      <h1>Start fast. Write better. Translate brilliantly.</h1>
+      <p>Refine with GPT, translate with DeepL — in 30+ languages — all in one ultra-simple workspace built for high-CTR short copy.</p>
+      <div class="cta-row">
+        <a href="signup.html" class="btn btn-primary">Create my free account</a>
+        <a href="https://www.lexai.work/demo" class="btn btn-ghost" target="_blank">Watch 90-sec demo ▸</a>
+      </div>
     </div>
   </section>
-  
-  <h2>🤝 Want a personalised tour?</h2>
-  <p>Book a live 15-min session and we’ll tailor LexAi to your workflow —
-     <a href="https://calendly.com/juliengustinelli/ai-implementation-introductory-chat?month=2025-08" target="_blank">grab a slot here</a>.</p>
+
+  <!-- 3 STEPS -->
+  <section class="steps">
+    <article class="step"><h3><span class="num">1</span>Paste your line</h3><p>Any short copy. Or upload a PDF/image to extract text.</p></article>
+    <article class="step"><h3><span class="num">2</span>Pick a language</h3><p>Keep English (Rephrase) or translate instantly to 30+ languages.</p></article>
+    <article class="step"><h3><span class="num">3</span>Tag Good / Bad</h3><p>LexAi learns your taste and surfaces stronger alternatives.</p></article>
+  </section>
+
+  <!-- PATHS -->
+  <section class="paths">
+    <h2>Pick your path</h2>
+    <div class="card-grid">
+      <article class="card">
+        <h3>Start creating (Free)</h3>
+        <p>Jump into the editor. Daily characters included.</p>
+        <a class="link" href="signup.html">Create account →</a>
+      </article>
+      <article class="card">
+        <h3>For Teams / Enterprise</h3>
+        <p>Custom brand voice, private data, usage controls & SSO.</p>
+        <a class="link" href="enterprise.html">Explore enterprise →</a>
+      </article>
+      <article class="card">
+        <h3>Proof & stats</h3>
+        <p>Charts, ROI and why unifying copy + translation saves hours.</p>
+        <a class="link" href="stats.html">See the stats →</a>
+      </article>
+    </div>
+    <p style="text-align:center;margin-top:12px">
+      Prefer a quick overview? <a href="contentsolutions.html">Compare B2C vs B2B</a> ·
+      Interested in early access? <a href="youraisolution.html">Apply to the pilot</a>
+    </p>
+  </section>
 </main>
 
 <footer class="site-footer">
