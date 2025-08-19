@@ -35,6 +35,27 @@ a{color:var(--brand-teal)}
 .btn-cta{background:var(--brand-green);color:#fff;padding:.5rem 1.4rem;border-radius:25px;
   font-weight:600;font-size:.9rem;text-decoration:none}
 .site-footer{background:var(--footer-bg);color:#d1d1d1;padding:2rem;text-align:center;font-size:.9rem}
+
+/* ===== hub cards (keeps your Poppins + brand colours) ===== */
+.hub{margin-top:2.2rem}
+.hub h2{font-size:1.45rem;font-weight:700;margin-bottom:1rem;color:#00c2b5}
+.hub-grid{
+  display:grid;gap:16px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+}
+.hub-card{
+  background:#fff;border:1px solid #e8ecef;border-radius:12px;
+  padding:16px;box-shadow:0 3px 12px rgba(0,0,0,.05);
+}
+.hub-card h3{font-size:1.1rem;margin-bottom:.35rem}
+.hub-card p{font-size:.97rem;color:#36414d;min-height:48px}
+.hub-cta{
+  display:inline-block;margin-top:.6rem;
+  background:linear-gradient(90deg,#00c2b5 0%,#00bfc7 100%);
+  color:#fff;text-decoration:none;padding:.5rem .9rem;border-radius:28px;
+  font-weight:600;font-size:.92rem
+}
+.hub-cta:hover{opacity:.9}
 </style>
 </head>
 <body>
@@ -84,6 +105,38 @@ a{color:var(--brand-teal)}
         A/B testing in Facebook, Google Ads or email.</li>
   </ol>
 
+  <!-- ===== Quick choices (Hub) ===== -->
+  <section class="hub">
+    <h2>Pick where you want to go</h2>
+    <div class="hub-grid">
+      <article class="hub-card">
+        <h3>Start creating (Free)</h3>
+        <p>Sign up and try English refine + DeepL translate. No card, daily quota included.</p>
+        <a class="hub-cta" href="signup.html">Create my free account →</a>
+      </article>
+      <article class="hub-card">
+        <h3>Compare B2C vs B2B</h3>
+        <p>See what the free tier offers vs. the enterprise path at a glance.</p>
+        <a class="hub-cta" href="contentsolutions.html">View comparison →</a>
+      </article>
+      <article class="hub-card">
+        <h3>For Teams / Enterprise</h3>
+        <p>Customization, brand voice, security & a no-seat license model.</p>
+        <a class="hub-cta" href="enterprise.html">Explore enterprise →</a>
+      </article>
+      <article class="hub-card">
+        <h3>Results & market data</h3>
+        <p>Charts, KPIs and why unifying copy + translation saves hours.</p>
+        <a class="hub-cta" href="stats.html">See the stats →</a>
+      </article>
+      <article class="hub-card">
+        <h3>Pilot program</h3>
+        <p>Limited-slot B2B pilot: custom build at near-cost in exchange for a testimonial.</p>
+        <a class="hub-cta" href="youraisolution.html">Apply now →</a>
+      </article>
+    </div>
+  </section>
+  
   <h2>🤝 Want a personalised tour?</h2>
   <p>Book a live 15-min session and we’ll tailor LexAi to your workflow —
      <a href="https://calendly.com/juliengustinelli/ai-implementation-introductory-chat?month=2025-08" target="_blank">grab a slot here</a>.</p>
