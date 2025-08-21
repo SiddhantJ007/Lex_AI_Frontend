@@ -189,7 +189,7 @@ async function sendReset(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return lexAlert("Enter a valid e-mail.");
 
-  await lexAlert("If this address exists, a code has been sent.");
+  lexAlert("If this address exists, a code has been sent.");
      
   await fetch(`${backendUrl}/pw-reset/request`,{
     method:"POST",
