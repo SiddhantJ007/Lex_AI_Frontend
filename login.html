@@ -185,9 +185,11 @@ document.getElementById("pwLostLink").onclick = e=>{
 
 /* STEP 1 – request code */
 
+function lealert(){
+     lexAlert("If this address exists, a code has been sent.");
+}
+     
 async function sendReset(){
-  lexAlert("If this address exists, a code has been sent.");
-  
   const email = m("pwResetEmail").value.trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return lexAlert("Enter a valid e-mail.");
@@ -239,7 +241,7 @@ async function confirmReset(){
       Enter your account e-mail – we’ll send a 6-digit code.
       <input id="pwResetEmail" type="email"
              style="margin-top:.9rem;width:100%;padding:.6rem">
-      <button onclick="sendReset()" style="margin-top:1rem">Send&nbsp;code</button>
+      <button onclick="lealert(); sendReset();" style="margin-top:1rem">Send&nbsp;code</button>
     </p>
 
     <!-- step 2: code + new pw -->
