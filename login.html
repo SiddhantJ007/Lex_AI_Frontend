@@ -106,13 +106,18 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
 <script>
 const backendUrl = "https://api.lexai.work";         
 
-/* ---------- tiny modal helpers -------------------------- */
+/* ---------- tiny modal helpers (awaitable) --------------- */
+let _lexResolve = null;
 function lexAlert(msg){
   document.getElementById("lexMsg").textContent = msg;
   document.getElementById("lexModal").style.display = "flex";
+  return new Promise(res => { _lexResolve = res; });
 }
-function lexClose(){ document.getElementById("lexModal").style.display="none";}
-
+function lexClose(){
+  document.getElementById("lexModal").style.display="none";
+  if (_lexResolve) { _lexResolve(true); _lexResolve = null; }
+}
+     
 /* ---------- show / hide password ------------------------ */
 function togglePw(id,btn){
   const f = document.getElementById(id);
@@ -185,10 +190,6 @@ document.getElementById("pwLostLink").onclick = e=>{
 
 /* STEP 1 – request code */
 
-function lealert(){
-     lexAlert("If this address exists, a code has been sent.");
-}
-     
 async function sendReset(){
   const email = m("pwResetEmail").value.trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
@@ -200,8 +201,10 @@ async function sendReset(){
     body:JSON.stringify({email})
   });
 
+  await lexAlert("If this address exists, a code has been sent.");
   m("pwStep1").style.display = "none";
   m("pwStep2").style.display = "";
+  m("pwCode").focus();
 }
 
 /* STEP 2 – confirm code + new pw */
@@ -241,7 +244,7 @@ async function confirmReset(){
       Enter your account e-mail – we’ll send a 6-digit code.
       <input id="pwResetEmail" type="email"
              style="margin-top:.9rem;width:100%;padding:.6rem">
-      <button onclick="lealert(); sendReset();" style="margin-top:1rem">Send&nbsp;code</button>
+      <button onclick="sendReset()" style="margin-top:1rem">Send&nbsp;code</button>
     </p>
 
     <!-- step 2: code + new pw -->
