@@ -51,6 +51,14 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
 /* footer (light) */
 .site-footer{background:var(--footer-bg);color:#d1d1d1;padding:2rem;margin-top:40px}
 .footer-bottom{max-width:1100px;margin:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.9rem}
+
+.lex-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:10000;display:none}
+.lex-box{background:#fff;border-radius:16px;padding:1.8rem 2.2rem;max-width:340px;
+  text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.lex-box h4{font-size:1.25rem;margin-bottom:1rem;color:var(--brand-green)}
+.lex-box button{margin-top:1rem;padding:.55rem 1.4rem;border:none;border-radius:45px;
+  background:var(--brand-green);color:#fff;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
@@ -116,6 +124,14 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
   </div>
 </footer>
 
+<div id="lexModal" class="lex-modal">
+  <div class="lex-box">
+    <h4>LexAi says</h4>
+    <p id="lexMsg"></p>
+    <button onclick="lexClose()">OK</button>
+  </div>
+</div>
+  
 <script>
 (function(){
   const BE = "https://api.lexai.work";
@@ -130,9 +146,9 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     const subject = document.getElementById("ticketSubject").value.trim();
     const type    = document.getElementById("ticketType").value;
     const msg     = document.getElementById("ticketMsg").value.trim();
-    if (!token){ alert("Please log in first."); return; }
+    if (!token){ LexAlert("Please log in first."); return; }
     if (subject.length < 4 || msg.length < 10){
-      alert("Please write a clear subject and a longer message."); return;
+      LexAlert("Please write a clear subject and a longer message."); return;
     }
     sendBtn.disabled = true; sendBtn.textContent = "Sending…";
     try{
@@ -142,11 +158,11 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
         body: JSON.stringify({ subject: `[${type}] ${subject}`, message: msg })
       });
       if (!r.ok) throw 0;
-      alert("Thanks! Your ticket has been sent.");
+      LexAlert("Thanks! Your ticket has been sent.");
       document.getElementById("ticketSubject").value="";
       document.getElementById("ticketMsg").value="";
     }catch{
-      alert("Could not send ticket. Please try again later.");
+      LexAlert("Could not send ticket. Please try again later.");
     }finally{
       sendBtn.disabled = false; sendBtn.textContent = "Submit Ticket";
     }
@@ -174,6 +190,12 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     {q:"Which browsers are supported?", a:"Latest Chrome and Edge; Safari on iOS also works well."}
   ];
 
+  function lexAlert(msg){
+  document.getElementById("lexMsg").textContent = msg;
+  document.getElementById("lexModal").style.display = "flex";
+  }
+  function lexClose(){ document.getElementById("lexModal").style.display="none";}
+  
   // Render as accordions
   const list = document.getElementById("faqList");
   faqs.forEach(({q,a})=>{
