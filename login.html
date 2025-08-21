@@ -51,6 +51,7 @@ button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0
 .lex-box h4{font-size:1.25rem;margin-bottom:1rem;color:var(--brand-green)}
 .lex-box button{margin-top:1rem;padding:.55rem 1.4rem;border:none;border-radius:45px;
   background:var(--brand-green);color:#fff;font-weight:600;cursor:pointer}
+#lexModal{ z-index:10050; }
 
 #pwResetModal .lex-box input{
   border:2px solid #e5e7eb;border-radius:8px;
@@ -201,7 +202,14 @@ async function sendReset(){
     body:JSON.stringify({email})
   });
 
+  /* Close the reset modal so the alert is not hidden behind it */
+  const modal = m("pwResetModal");
+  modal.style.display = "none";
+
+  /* Show notice FIRST, then reopen the reset modal at Step 2 */
   await lexAlert("If this address exists, a code has been sent.");
+
+  modal.style.display = "flex";
   m("pwStep1").style.display = "none";
   m("pwStep2").style.display = "";
   m("pwCode").focus();
