@@ -184,13 +184,14 @@ document.getElementById("pwLostLink").onclick = e=>{
 };
 
 /* STEP 1 – request code */
+
 async function sendReset(){
+  lexAlert("If this address exists, a code has been sent.");
+  
   const email = m("pwResetEmail").value.trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return lexAlert("Enter a valid e-mail.");
-
-  lexAlert("If this address exists, a code has been sent.");
-     
+  
   await fetch(`${backendUrl}/pw-reset/request`,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
