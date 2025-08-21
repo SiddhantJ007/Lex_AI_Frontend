@@ -146,9 +146,9 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     const subject = document.getElementById("ticketSubject").value.trim();
     const type    = document.getElementById("ticketType").value;
     const msg     = document.getElementById("ticketMsg").value.trim();
-    if (!token){ LexAlert("Please log in first."); return; }
+    if (!token){ lexAlert("Please log in first."); return; }
     if (subject.length < 4 || msg.length < 10){
-      LexAlert("Please write a clear subject and a longer message."); return;
+      lexAlert("Please write a clear subject and a longer message."); return;
     }
     sendBtn.disabled = true; sendBtn.textContent = "Sending…";
     try{
@@ -158,11 +158,11 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
         body: JSON.stringify({ subject: `[${type}] ${subject}`, message: msg })
       });
       if (!r.ok) throw 0;
-      LexAlert("Thanks! Your ticket has been sent.");
+      lexAlert("Thanks! Your ticket has been sent.");
       document.getElementById("ticketSubject").value="";
       document.getElementById("ticketMsg").value="";
     }catch{
-      LexAlert("Could not send ticket. Please try again later.");
+      lexAlert("Could not send ticket. Please try again later.");
     }finally{
       sendBtn.disabled = false; sendBtn.textContent = "Submit Ticket";
     }
@@ -214,7 +214,7 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
     const apex = "https://lexai.work";
     // default: sign-in
     cta.textContent = "Sign in to App";
-    cta.href = `${apex}/login.html`;
+    cta.href = `${apex}/login?next=/faq.html`;
     if (!token) return;
     try{
       const r = await fetch(BE + "/me", { headers:{ Authorization:"Bearer " + token } });
