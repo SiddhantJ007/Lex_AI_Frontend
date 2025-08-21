@@ -191,10 +191,14 @@ button.primary:hover{opacity:.95;transform:translateY(-1px)}
   ];
 
   function lexAlert(msg){
-  document.getElementById("lexMsg").textContent = msg;
-  document.getElementById("lexModal").style.display = "flex";
+    document.getElementById("lexMsg").textContent = msg;
+    document.getElementById("lexModal").style.display = "flex";
   }
-  function lexClose(){ document.getElementById("lexModal").style.display="none";}
+  function lexClose(){
+    document.getElementById("lexModal").style.display="none";
+  }
+  window.lexAlert = lexAlert;
+  window.lexClose = lexClose;
   
   // Render as accordions
   const list = document.getElementById("faqList");
