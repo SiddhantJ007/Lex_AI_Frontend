@@ -1,6 +1,6 @@
 // Smart navbar CTA: Try for free ↔ Open App
 (function () {
-  var BE = "https://main.d2ig4w5p4y9zve.amplifyapp.com";
+  var BE = "https://api.lexai.work";
 
   // Grab the CTA in the glass navbar (skip the red logout button on trans.html)
   var cta = document.querySelector('nav.glass .btn-cta:not(.btn-logout)');
