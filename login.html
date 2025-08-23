@@ -199,27 +199,24 @@ document.getElementById("pwLostLink").onclick = e=>{
 
 function closePwReset(){ m("pwResetModal").style.display="none"; }
 
-/* STEP 1 – request code (with response checks) */
+/* STEP 1 – request code */
 async function sendReset(){
   const email = m("pwResetEmail").value.trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    await lexAlert("Enter a valid e-mail.");
-    return;
+    await lexAlert("Enter a valid e-mail."); return;
   }
 
   let ok = false;
   try{
-    const r = await fetch(`${backendUrl}/pw-reset/request`, {
+    const r = await fetch(`${backendUrl}/pw-reset/request`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body:JSON.stringify({email})
     });
     ok = r.ok;
-  }catch(e){
-    // network/CORS/SSL failure
-  }
+  }catch(_){ /* network/SSL/CORS */ }
 
-  // Hide reset modal while we show the notice
+  // Hide reset modal while the alert is shown
   m("pwResetModal").style.display = "none";
 
   if(!ok){
@@ -231,7 +228,6 @@ async function sendReset(){
     return;
   }
 
-  // Success path (even if the email doesn't exist, the API still returns ok)
   await lexAlert("If this address exists, a code has been sent.");
 
   // Continue to Step 2
@@ -241,13 +237,12 @@ async function sendReset(){
   m("pwCode").focus();
 }
 
-/* STEP 2 – confirm code + new password (with checks) */
+/* STEP 2 – confirm code + new password */
 async function confirmReset(){
   const code = m("pwCode").value.trim();
   const pw   = m("pwNew").value.trim();
   if(code.length < 4 || pw.length < 6){
-    await lexAlert("Fill both fields (≥6-char password).");
-    return;
+    await lexAlert("Fill both fields (≥6-char password)."); return;
   }
 
   try{
@@ -263,14 +258,12 @@ async function confirmReset(){
     }else{
       await lexAlert("Invalid or expired code.");
     }
-  }catch(e){
+  }catch(_){
     await lexAlert("Server error. Please try again later.");
   }
 }
-
-/* (Optional) swallow noisy extension errors in console only */
-window.addEventListener('unhandledrejection', () => { /* no-op */ });
 </script>
+
 <div id="loginSpin" style="
       display:none;position:fixed;inset:0;z-index:9999;
       background:rgba(255,255,255,.6);backdrop-filter:blur(2px);
