@@ -176,73 +176,12 @@ document.getElementById("loginForm").onsubmit = async e=>{
 };
 </script>
 
-<script> 
-/* ---------- PW-RESET flow ------------------------------------ */ 
-const m = id => document.getElementById(id); 
-function closePwReset(){ m("pwResetModal").style.display="none"; } 
-
-document.getElementById("pwLostLink").onclick = e=>{ 
-e.preventDefault(); 
-m("pwStep1").style.display = ""; 
-m("pwStep2").style.display = "none"; 
-m("pwResetEmail").value = ""; 
-m("pwResetModal").style.display = "flex"; 
-}; 
-
-/* STEP 1 – request code */ 
-async function sendReset(){
-const email = m("pwResetEmail").value.trim(); 
-if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) 
-     return lexAlert("Enter a valid e-mail."); 
-
-await fetch(${backendUrl}/pw-reset/request,{ 
-     method:"POST", 
-     headers:{ "Content-Type":"application/json" }, 
-     body:JSON.stringify({email}) 
-   }); 
-
-m("pwStep1").style.display = "none"; 
-m("pwStep2").style.display = ""; 
-} 
-
-/* STEP 2 – confirm code + new pw */ 
-async function confirmReset(){ 
-const code = m("pwCode").value.trim(); 
-const pw = m("pwNew").value.trim(); 
-     
-if(code.length < 4 || pw.length < 6) 
- return lexAlert("Fill both fields (≥6-char password)."); 
-     
-const r = await fetch(${backendUrl}/pw-reset/confirm,{ 
-     method:"POST", 
-     headers:{ "Content-Type":"application/json" }, 
-     body:JSON.stringify({code,new_password:pw}) 
-   }); 
-     
-if(r.ok){ 
-   lexAlert("Password updated — you can log in now."); 
-   closePwReset(); 
-}else{ 
-   lexAlert("Invalid or expired code."); 
- } 
-} 
-</script>
-     
-<!-- <script>
+<script>
+/* ---------- PW-RESET flow ------------------------------------ */
 const m = id => document.getElementById(id);
+function closePwReset(){ m("pwResetModal").style.display = "none"; }
 
-/* Promise-based alert */
-function lexAlert(msg){
-  return new Promise(resolve=>{
-    m("lexMsg").textContent = msg;
-    m("lexModal").style.display = "flex";
-    const btn = m("lexModal").querySelector("button");
-    btn.onclick = ()=>{ m("lexModal").style.display = "none"; resolve(); };
-  });
-}
-
-/* Open Step 1 */
-document.getElementById("pwLostLink").onclick = e=>{
+document.getElementById("pwLostLink").onclick = (e)=>{
   e.preventDefault();
   m("pwStep1").style.display = "";
   m("pwStep2").style.display = "none";
@@ -250,72 +189,58 @@ document.getElementById("pwLostLink").onclick = e=>{
   m("pwResetModal").style.display = "flex";
 };
 
-function closePwReset(){ m("pwResetModal").style.display="none"; }
-
 /* STEP 1 – request code */
 async function sendReset(){
   const email = m("pwResetEmail").value.trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    await lexAlert("Enter a valid e-mail."); return;
-  }
-
-  let ok = false;
-  try{
-    const r = await fetch(`${backendUrl}/pw-reset/request`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({email})
-    });
-    ok = r.ok;
-  }catch(_){ /* network/SSL/CORS */ }
-
-  // Hide reset modal while the alert is shown
-  m("pwResetModal").style.display = "none";
-
-  if(!ok){
-    await lexAlert("We couldn't reach the server. Please try again in a minute.");
-    // Restore Step 1 so they can retry
-    m("pwResetModal").style.display = "flex";
-    m("pwStep1").style.display = "";
-    m("pwStep2").style.display = "none";
+    lexAlert("Enter a valid e-mail.");
     return;
   }
 
-  await lexAlert("If this address exists, a code has been sent.");
+  try{
+    await fetch(`${backendUrl}/pw-reset/request`, {
+      method : "POST",
+      headers: { "Content-Type":"application/json" },
+      body   : JSON.stringify({ email })
+    });
+  }catch(err){
+    lexAlert("Could not reach server. Please try again.");
+    return;
+  }
 
-  // Continue to Step 2
-  m("pwResetModal").style.display = "flex";
   m("pwStep1").style.display = "none";
   m("pwStep2").style.display = "";
   m("pwCode").focus();
 }
 
-/* STEP 2 – confirm code + new password */
+/* STEP 2 – confirm code + new pw */
 async function confirmReset(){
   const code = m("pwCode").value.trim();
   const pw   = m("pwNew").value.trim();
+
   if(code.length < 4 || pw.length < 6){
-    await lexAlert("Fill both fields (≥6-char password)."); return;
+    lexAlert("Fill both fields (≥6-char password).");
+    return;
   }
 
   try{
-    const r = await fetch(`${backendUrl}/pw-reset/confirm`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({code,new_password:pw})
+    const r = await fetch(`${backendUrl}/pw-reset/confirm`, {
+      method : "POST",
+      headers: { "Content-Type":"application/json" },
+      body   : JSON.stringify({ code, new_password: pw })
     });
 
     if(r.ok){
-      await lexAlert("Password updated — you can log in now.");
+      lexAlert("Password updated — you can log in now.");
       closePwReset();
     }else{
-      await lexAlert("Invalid or expired code.");
+      lexAlert("Invalid or expired code.");
     }
-  }catch(_){
-    await lexAlert("Server error. Please try again later.");
+  }catch(err){
+    lexAlert("Could not reach server. Try again.");
   }
 }
-</script>-->
+</script>
 
 <div id="loginSpin" style="
       display:none;position:fixed;inset:0;z-index:9999;
